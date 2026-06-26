@@ -290,6 +290,7 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           ALIYUN_ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
           ALIYUN_ACR_NAMESPACE: ${{ secrets.ALIYUN_ACR_NAMESPACE }}
+          TAILSCALE_AUTHKEY: ${{ secrets.TAILSCALE_AUTHKEY }}
         run: |
           set -euo pipefail
           test -n "$DEPLOY_HOST"
@@ -297,6 +298,15 @@ jobs:
           test -n "$DEPLOY_SSH_KEY"
           test -n "$ALIYUN_ACR_REGISTRY"
           test -n "$ALIYUN_ACR_NAMESPACE"
+          test -n "$TAILSCALE_AUTHKEY"
+
+      # Join the tailnet so the runner can reach worker-02 (private compute,
+      # no public IP). ephemeral=true auto-removes the node after the job ends.
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          args: --accept-routes --hostname arda-ci-${{ github.run_id }}
 
       - name: Prepare SSH
         shell: bash
