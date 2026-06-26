@@ -1,39 +1,33 @@
-import type { Subscription, Tier } from "./types";
+import { type ArdaClaim, type ArdaState, type Subscription, type Tier, subscriptionFromClaim } from "./types";
 
-/**
- * Context for an entitlement lookup. Entitlement is keyed by tenant/workspace
- * (NOT by the access token, which carries no entitlement claims), so the caller
- * resolves these identifiers from the session before asking.
- */
-export interface EntitlementContext {
-  readonly tenantId: string;
-  readonly workspaceId: string;
-  readonly app: "arda";
-}
-
+/** Resolve entitlement from an ArdaClaim extracted from the access token.
+ *  When claim is null (local dev, no real IdP) the resolver falls back to
+ *  MOCK_TIER / MOCK_STATE env vars so the app is usable without accounts. */
 export interface EntitlementResolver {
-  resolve(ctx: EntitlementContext): Promise<Subscription>;
+  resolve(claim: ArdaClaim | null): Promise<Subscription>;
 }
 
 /**
- * Stand-in resolver used until the real Vxture commerce/entitlement service is
- * wired. Returns an active subscription at MOCK_TIER (default "pro") regardless
- * of tenant/workspace, so the shell + overview page are reachable in dev.
+ * Stand-in resolver used until accounts.vxture.com emits the real `arda`
+ * scope claim. When a real claim is present it is passed through unchanged.
+ * When absent (local dev without a real IdP) falls back to MOCK_STATE +
+ * MOCK_TIER so the shell and overview page are reachable.
  */
 export class MockEntitlementResolver implements EntitlementResolver {
-  async resolve(_ctx: EntitlementContext): Promise<Subscription> {
+  async resolve(claim: ArdaClaim | null): Promise<Subscription> {
+    if (claim) return subscriptionFromClaim(claim);
+    const state = (process.env.MOCK_STATE as ArdaState) ?? "subscribed";
     const tier = (process.env.MOCK_TIER as Tier) ?? "pro";
-    return { tier, status: "active" };
+    return subscriptionFromClaim({ state, tier, had_trial: false });
   }
 }
 
 /**
- * Factory for the active entitlement resolver. Returns the Mock for now.
- *
- * TODO(commerce): swap this for the real Vxture commerce/entitlement resolver
- * (an out-of-band lookup against the subscription service, keyed by
- * tenant/workspace per Identity Platform section 6.3). The signature is stable,
- * so only this factory body changes.
+ * Factory for the active entitlement resolver.
+ * TODO(accounts): once accounts.vxture.com emits the `arda` claim, the mock
+ * becomes transparent (it passes real claims through). No factory change is
+ * needed; remove MockEntitlementResolver only when the claim is guaranteed
+ * to be present in all environments.
  */
 export function getEntitlementResolver(): EntitlementResolver {
   return new MockEntitlementResolver();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ArdaClaim } from "../entitlement/types";
 
 /**
  * Client-side session DTO and helpers. The session is fetched from the
@@ -28,6 +29,7 @@ export interface SessionUser {
   workspaceName: string;
   roles: string[];
   userType: string;
+  ardaClaim: ArdaClaim | null;
 }
 
 /** Response shape of GET /auth/session. */

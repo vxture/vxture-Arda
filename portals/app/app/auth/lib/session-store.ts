@@ -10,6 +10,7 @@
 import Redis from "ioredis";
 import { randomToken } from "./pkce";
 import type { OidcConfig } from "./config";
+import type { ArdaClaim } from "../../entitlement/types";
 
 export interface AuthRequest {
   codeVerifier: string;
@@ -43,6 +44,9 @@ export interface IdentityClaims {
   roles: string[];
   user_type: string;
   exp: number;
+  /** Populated when the access token carries the "arda" scope claim.
+   *  Null for local dev without a real IdP or when the claim is absent. */
+  arda_claim: ArdaClaim | null;
 }
 
 export interface TokenBundle {

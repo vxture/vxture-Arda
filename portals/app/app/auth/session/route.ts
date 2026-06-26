@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         workspaceName: identity.active_workspace_name,
         roles: identity.roles,
         userType: identity.user_type,
+        ardaClaim: identity.arda_claim,
       },
     },
     { headers: NO_STORE },

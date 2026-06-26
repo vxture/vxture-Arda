@@ -21,6 +21,7 @@ import {
   type IdentityClaims,
 } from "./session-store";
 import { toIdentityClaims, toTokenBundle } from "./claims";
+import type { ArdaClaim } from "../../entitlement/types";
 
 export interface SessionResolution {
   /** The current identity claims, or null when there is no valid session. */
@@ -86,6 +87,7 @@ export interface Session {
   workspaceName: string;
   roles: string[];
   userType: string;
+  ardaClaim: ArdaClaim | null;
 }
 
 export function toSession(identity: IdentityClaims): Session {
@@ -107,6 +109,7 @@ export function toSession(identity: IdentityClaims): Session {
     workspaceName: identity.active_workspace_name,
     roles: identity.roles,
     userType: identity.user_type,
+    ardaClaim: identity.arda_claim,
   };
 }
 

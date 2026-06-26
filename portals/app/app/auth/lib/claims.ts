@@ -6,6 +6,22 @@
 import type { JWTPayload } from "jose";
 import type { IdentityClaims, TokenBundle } from "./session-store";
 import type { TokenSet } from "./oidc";
+import { type ArdaClaim, type ArdaState, type Tier, TIER_ORDER } from "../../entitlement/types";
+
+const ARDA_STATES: readonly ArdaState[] = ["trial", "subscribed", "expired", "free"];
+
+function toArdaClaim(v: unknown): ArdaClaim | null {
+  if (typeof v !== "object" || v === null) return null;
+  const o = v as Record<string, unknown>;
+  const state = typeof o.state === "string" ? o.state : "";
+  const tier = typeof o.tier === "string" ? o.tier : "";
+  if (!(ARDA_STATES as string[]).includes(state)) return null;
+  return {
+    state: state as ArdaState,
+    tier: (TIER_ORDER as string[]).includes(tier) ? (tier as Tier) : "free",
+    had_trial: o.had_trial === true,
+  };
+}
 
 function str(v: unknown): string {
   return typeof v === "string" ? v : "";
@@ -48,6 +64,7 @@ export function toIdentityClaims(idClaims: JWTPayload, accessClaims: JWTPayload)
     roles: strList(accessClaims.roles),
     user_type: str(accessClaims.userType) || str(idClaims.userType),
     exp: typeof accessClaims.exp === "number" ? accessClaims.exp : 0,
+    arda_claim: toArdaClaim(accessClaims.arda),
   };
 }
 
