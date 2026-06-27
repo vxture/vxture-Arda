@@ -9,5 +9,6 @@ export function GET() {
     status: "ok",
     version: ardaVersion.label,
     sha: ardaVersion.sha,
+    stage: ardaVersion.stage,
   });
 }

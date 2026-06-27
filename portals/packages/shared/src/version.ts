@@ -18,4 +18,6 @@ export const ardaVersion = {
   sha: GIT_SHA,
   /** Human-friendly build label. */
   label: `arda-app/${GIT_SHA === "dev" ? "dev" : `${GIT_SHA.slice(0, 7)}`}`,
+  /** Deployment pipeline stage, set at deploy time or "local" for dev. */
+  stage: GIT_SHA === "dev" ? "local" : "ci",
 } as const;
