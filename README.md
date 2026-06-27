@@ -61,8 +61,8 @@ console/admin app and no VPN stack - Arda is one app, one owned image
 
 | Environment | Domain | Stack path (worker-02) | Tailnet port (`APP_PUBLISH_PORT`) |
 |-------------|--------------------------|------------------------|-----------------------------------|
-| prod | `arda.vxture.com` | `/srv/arda` | 3230 |
-| beta | `beta-arda.vxture.com` | `/srv/arda-beta` | 3231 |
+| prod | `arda.vxture.com` | `/srv/md0/arda` | 3230 |
+| beta | `beta-arda.vxture.com` | `/srv/md1/arda-beta` | 3231 |
 
 Both are direct subdomains of `vxture.com`, served by the worker-01 edge with
 the wildcard `*.vxture.com` cert. Each stack publishes `arda-app` on its own
@@ -101,8 +101,8 @@ an Arda OIDC callback origin against `accounts.vxture.com`.
 ## Deploy
 
 Arda deploys to `worker-02` (private compute, reached by its tailscale name/IP,
-same segment as worker-01). Two independent stacks live on that host: `/srv/arda`
-(prod) and `/srv/arda-beta` (beta). Each release builds the one owned image
+same segment as worker-01). Two independent stacks live on that host: `/srv/md0/arda`
+(prod) and `/srv/md1/arda-beta` (beta). Each release builds the one owned image
 (`arda-app`) and deploys the stack matching the pushed branch (`develop` -> beta,
 `main` -> prod). The deploy starts `arda-app` + `arda-redis` and publishes the
 app on `APP_PUBLISH_PORT`; TLS and the public domain are handled by the worker-01
@@ -110,7 +110,7 @@ edge, which fronts the app with the wildcard `*.vxture.com` cert.
 
 ```bash
 ssh stone@<worker-02-tailscale-ip>
-cd /srv/arda            # or /srv/arda-beta for the beta stack
+cd /srv/md0/arda            # or /srv/md1/arda-beta for the beta stack
 bash deploy/deploy.sh all
 ```
 

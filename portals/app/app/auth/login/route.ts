@@ -17,6 +17,14 @@ export const runtime = "nodejs";
  * first-party to accounts.vxture.com after this redirect).
  */
 export async function GET(request: NextRequest) {
+  // Local dev: bypass OIDC, create a mock session directly.
+  if (process.env.MOCK_AUTH === "true" && process.env.NODE_ENV !== "production") {
+    const devLogin = new URL("/auth/dev-login", request.url);
+    const returnTo = request.nextUrl.searchParams.get("returnTo");
+    if (returnTo) devLogin.searchParams.set("returnTo", returnTo);
+    return NextResponse.redirect(devLogin);
+  }
+
   const cfg = getOidcConfig();
   if (!cfg) {
     return new NextResponse("OIDC RP is not configured", {

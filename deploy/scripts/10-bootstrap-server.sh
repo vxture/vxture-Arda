@@ -4,8 +4,8 @@
 # Safe to re-run: each step checks state before acting.
 #
 # ROOT_DIR selects which stack's tree is prepared (the same host runs both):
-#   ROOT_DIR=/srv/arda       prod (default)
-#   ROOT_DIR=/srv/arda-beta  beta
+#   ROOT_DIR=/srv/md0/arda       prod (default)
+#   ROOT_DIR=/srv/md1/arda-beta  beta
 # Run init once per stack to create each root.
 #
 # NOTE: root SSH is intentionally left enabled - disable manually after
@@ -17,7 +17,7 @@ source "$SCRIPT_DIR/../lib/00-log.sh"
 
 if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
   echo ""
-  echo "  Usage: [ROOT_DIR=/srv/arda[-beta]] sudo bash deploy/server.sh init"
+  echo "  Usage: [ROOT_DIR=/srv/md0/arda] sudo bash deploy/server.sh init"
   echo ""
   echo "  Bootstraps a server: installs Docker and docker compose, creates the"
   echo "  admin user (default: stone), copies SSH keys from root, configures the"
@@ -38,7 +38,7 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 ADMIN_USER="${ADMIN_USER:-stone}"
-ROOT_DIR="${ROOT_DIR:-/srv/arda}"
+ROOT_DIR="${ROOT_DIR:-/srv/md0/arda}"
 
 # -- System packages -----------------------------------------------------------
 log_step "Checking required packages..."

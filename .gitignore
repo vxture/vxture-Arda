@@ -3,6 +3,7 @@
 *.env
 .env.*
 !.env.example
+!.env.local.example
 .env.bak.*
 .npmrc
 # The workspace .npmrc files only declare the @vxture GitHub Packages registry

@@ -5,7 +5,7 @@
 #   bash deploy/deploy.sh <command> [args]
 #
 # The same scripts deploy either stack; which stack is decided by which root
-# they run from (PROJECT_ROOT = lib/../.. = /srv/arda or /srv/arda-beta) and the
+# they run from (PROJECT_ROOT = lib/../.. = /srv/md0/arda or /srv/md1/arda-beta) and the
 # .env found at $PROJECT_ROOT/etc/.env.
 #
 # Two-host topology: this stack is app + redis only, plain HTTP on worker-02's

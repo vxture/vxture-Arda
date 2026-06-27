@@ -26,9 +26,9 @@ _usage() {
   echo "    init              Install Docker + admin user, prepare ROOT_DIR"
   echo "    reset [--full]    Stop containers or wipe runtime data"
   echo ""
-  echo "  ROOT_DIR selects the stack for init (default /srv/arda):"
-  echo "    ROOT_DIR=/srv/arda       sudo bash deploy/server.sh init   # prod"
-  echo "    ROOT_DIR=/srv/arda-beta  sudo bash deploy/server.sh init   # beta"
+  echo "  ROOT_DIR selects the stack for init (default /srv/md0/arda):"
+  echo "    ROOT_DIR=/srv/md0/arda       sudo bash deploy/server.sh init   # prod"
+  echo "    ROOT_DIR=/srv/md1/arda-beta  sudo bash deploy/server.sh init   # beta"
   echo ""
 }
 

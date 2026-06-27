@@ -39,18 +39,49 @@ function trimTrailingSlash(value: string): string {
  * Until both the issuer and the client secret are provisioned, the auth routes
  * treat a null config as "not configured" (login/logout return 503, session
  * returns anonymous).
+ *
+ * When MOCK_AUTH=true (local dev, no real IdP) only REDIS_URL is required.
+ * OIDC endpoints are filled with unreachable placeholders; the /auth/dev-login
+ * route creates sessions directly in Redis so those endpoints are never called.
+ * MOCK_AUTH must never be set in production (NODE_ENV=production ignores it).
  */
 export function getOidcConfig(): OidcConfig | null {
+  const redisUrl = (process.env.REDIS_URL || "").trim();
+  const cookieName = (process.env.RP_SESSION_COOKIE_NAME || "vx_rp_session").trim();
+  const cookieDomain = (process.env.RP_SESSION_COOKIE_DOMAIN || "").trim();
+  const ttlRaw = Number.parseInt(process.env.RP_SESSION_TTL || "", 10);
+  const sessionTtlSeconds = Number.isFinite(ttlRaw) && ttlRaw > 0 ? ttlRaw : 2592000;
+
+  if (process.env.MOCK_AUTH === "true" && process.env.NODE_ENV !== "production") {
+    if (!redisUrl) return null;
+    return {
+      issuer: "http://mock-idp.local",
+      clientId: "arda",
+      clientSecret: "mock-secret",
+      redirectUri: "http://localhost:3230/auth/callback",
+      scopes: "openid profile email phone arda",
+      postLogoutRedirectUri: "http://localhost:3230/",
+      redisUrl,
+      sessionTtlSeconds: Math.min(sessionTtlSeconds, 86400),
+      cookieName,
+      cookieDomain,
+      isProd: false,
+      endpoints: {
+        authorize: "http://mock-idp.local/oidc/authorize",
+        token: "http://mock-idp.local/oidc/token",
+        jwks: "http://mock-idp.local/oidc/jwks",
+        endSession: "http://mock-idp.local/oidc/end_session",
+      },
+    };
+  }
+
   const issuer = trimTrailingSlash((process.env.OIDC_ISSUER || "").trim());
   const clientSecret = (process.env.OIDC_CLIENT_SECRET || "").trim();
   if (!issuer || !clientSecret) return null;
 
   const clientId = (process.env.OIDC_CLIENT_ID || "arda").trim();
   const redirectUri = (process.env.OIDC_REDIRECT_URI || "").trim();
-  const redisUrl = (process.env.REDIS_URL || "").trim();
   if (!clientId || !redirectUri || !redisUrl) return null;
-
-  const ttl = Number.parseInt(process.env.RP_SESSION_TTL || "", 10);
 
   return {
     issuer,
@@ -60,11 +91,11 @@ export function getOidcConfig(): OidcConfig | null {
     scopes: (process.env.OIDC_SCOPES || "openid profile email phone arda").trim(),
     postLogoutRedirectUri: (process.env.OIDC_POST_LOGOUT_REDIRECT_URI || "").trim(),
     redisUrl,
-    sessionTtlSeconds: Number.isFinite(ttl) && ttl > 0 ? ttl : 2592000,
-    cookieName: (process.env.RP_SESSION_COOKIE_NAME || "vx_rp_session").trim(),
+    sessionTtlSeconds,
+    cookieName,
     // Host-only domain (no leading dot). Read verbatim from env so the cookie is
     // scoped to exactly arda.vxture.com and never to sibling *.vxture.com hosts.
-    cookieDomain: (process.env.RP_SESSION_COOKIE_DOMAIN || "").trim(),
+    cookieDomain,
     isProd: process.env.NODE_ENV === "production",
     endpoints: {
       authorize: `${issuer}/oidc/authorize`,

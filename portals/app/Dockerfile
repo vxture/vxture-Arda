@@ -23,6 +23,14 @@ RUN --mount=type=secret,id=npm_token \
 FROM ${NODE_BASE_IMAGE} AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars are baked into the browser bundle at build time. Pass them
+# as build args so CI can inject the correct value per stack (prod vs beta).
+ARG NEXT_PUBLIC_APP_ENV=prod
+ARG NEXT_PUBLIC_PROD_URL=https://arda.vxture.com
+ARG NEXT_PUBLIC_BETA_URL=https://beta-arda.vxture.com
+ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}
+ENV NEXT_PUBLIC_PROD_URL=${NEXT_PUBLIC_PROD_URL}
+ENV NEXT_PUBLIC_BETA_URL=${NEXT_PUBLIC_BETA_URL}
 # Bring the full installed workspace from deps: root + per-workspace
 # node_modules and the @arda symlinks (npm does not hoist @vxture/ioredis/jose
 # to root). Then overlay source; node_modules are dockerignored so they survive.

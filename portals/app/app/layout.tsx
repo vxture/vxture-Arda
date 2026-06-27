@@ -9,6 +9,7 @@ import { Providers } from "@arda/shared/providers";
 import { I18nProvider } from "@arda/shared/i18n";
 import { messages } from "../messages";
 import { AccountGate } from "./ui/account-gate";
+import { EnvGuard } from "./entitlement/env-guard";
 import { EntitlementGate } from "./entitlement/gate";
 
 /** DS brand typeface (Funnel Display) wired to the DS brand-font loader slot. */
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 session), then EntitlementGate checks the workspace
                 subscription before any app surface renders. */}
             <AccountGate>
-              <EntitlementGate>{children}</EntitlementGate>
+              <EnvGuard>
+                <EntitlementGate>{children}</EntitlementGate>
+              </EnvGuard>
             </AccountGate>
           </I18nProvider>
         </Providers>

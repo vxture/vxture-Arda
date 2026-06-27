@@ -3,12 +3,11 @@ import { getEntitlementResolver } from "../../entitlement/resolver";
 import type { Subscription } from "../../entitlement/types";
 import { getSession } from "../../auth/lib/session";
 
-// Resolves the current workspace's Arda subscription. Entitlement is an
-// out-of-band lookup keyed by tenant/workspace (Vxture access tokens carry no
-// entitlement claims; Identity Platform section 6.3), so this route reads the
-// tenant/workspace from the authenticated session and asks the entitlement
-// resolver. No session -> 401 (the AccountGate above should have authenticated
-// the user, but the API fails closed).
+// Resolves the current user's Arda entitlement. The `arda` scope claim in the
+// access token is the authoritative source; it is parsed at session creation
+// (claims.ts) and stored alongside identity in Redis. When the claim is absent
+// (local dev without a real IdP) the MockEntitlementResolver falls back to the
+// MOCK_STATE / MOCK_TIER env vars.
 export async function GET() {
   const session = await getSession();
   if (!session) {
@@ -16,11 +15,7 @@ export async function GET() {
   }
 
   const resolver = getEntitlementResolver();
-  const subscription: Subscription = await resolver.resolve({
-    tenantId: session.tenantId,
-    workspaceId: session.workspaceId,
-    app: "arda",
-  });
+  const subscription: Subscription = await resolver.resolve(session.ardaClaim);
 
   return NextResponse.json(subscription);
 }
