@@ -237,8 +237,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          no-cache: true
           build-args: |
             VXTURE_NPM_REGISTRY=${{ env.VXTURE_NPM_REGISTRY }}
           secrets: |
