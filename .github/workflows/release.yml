@@ -257,9 +257,12 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           no-cache: true
+          # Try GITHUB_TOKEN first (auto-scoped to packages: write in this job);
+          # if @vxture packages live under a different repo, switch back to
+          # a valid PAT secret.
           build-args: |
             VXTURE_NPM_REGISTRY=${{ env.VXTURE_NPM_REGISTRY }}
-            NODE_AUTH_TOKEN=${{ secrets.NODE_AUTH_TOKEN }}
+            NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
           tags: |
             ghcr.io/${{ env.GHCR_NAMESPACE }}/${{ matrix.image }}:${{ steps.meta.outputs.image_tag }}
             ghcr.io/${{ env.GHCR_NAMESPACE }}/${{ matrix.image }}:${{ steps.meta.outputs.branch_tag }}
