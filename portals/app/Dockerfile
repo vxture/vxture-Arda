@@ -7,20 +7,18 @@ FROM ${NODE_BASE_IMAGE} AS deps
 WORKDIR /app
 ARG VXTURE_NPM_REGISTRY=https://npm.pkg.github.com
 ARG NODE_AUTH_TOKEN
-# Persist the build-arg as an env var so npm's .npmrc ${NODE_AUTH_TOKEN}
-# substitution can find it via process.env. Without ENV, BuildKit's container
-# driver may not propagate the ARG value to the RUN shell's environment.
-ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
 # Root manifest + single lockfile + every workspace member manifest (npm ci
 # needs them all to resolve the workspace).
 COPY package.json package-lock.json ./
 COPY app/package.json ./app/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
-# .npmrc uses ${NODE_AUTH_TOKEN} variable (npm substitutes at runtime), matching
-# the ci.yml approach exactly. The ENV is scoped to the intermediate deps stage
-# only (never pushed to registry), so the token does not leak to production.
-RUN printf '@vxture:registry=%s\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' \
-      "$VXTURE_NPM_REGISTRY" > .npmrc \
+# Write the actual token value directly into .npmrc (shell expands $NODE_AUTH_TOKEN
+# from the build-arg). npm's own ${...} substitution from .npmrc does not reliably
+# resolve build-arg values inside the Docker BuildKit container driver, causing
+# persistent 401 errors. The file is deleted after npm ci; the deps stage is
+# intermediate and never pushed, so the token does not leak to production.
+RUN printf '@vxture:registry=%s\n//npm.pkg.github.com/:_authToken=%s\n' \
+      "$VXTURE_NPM_REGISTRY" "$NODE_AUTH_TOKEN" > .npmrc \
     && npm ci \
     && rm -f .npmrc
 
