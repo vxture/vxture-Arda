@@ -7,15 +7,18 @@ FROM ${NODE_BASE_IMAGE} AS deps
 WORKDIR /app
 ARG VXTURE_NPM_REGISTRY=https://npm.pkg.github.com
 ARG NODE_AUTH_TOKEN
+# Persist the build-arg as an env var so npm's .npmrc ${NODE_AUTH_TOKEN}
+# substitution can find it via process.env. Without ENV, BuildKit's container
+# driver may not propagate the ARG value to the RUN shell's environment.
+ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
 # Root manifest + single lockfile + every workspace member manifest (npm ci
 # needs them all to resolve the workspace).
 COPY package.json package-lock.json ./
 COPY app/package.json ./app/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 # .npmrc uses ${NODE_AUTH_TOKEN} variable (npm substitutes at runtime), matching
-# the ci.yml approach exactly. The ARG is available as an env var during RUN so
-# npm can resolve the placeholder. This is simpler and more reliable than the
-# --mount=type=secret approach which was causing intermittent BuildKit failures.
+# the ci.yml approach exactly. The ENV is scoped to the intermediate deps stage
+# only (never pushed to registry), so the token does not leak to production.
 RUN printf '@vxture:registry=%s\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' \
       "$VXTURE_NPM_REGISTRY" > .npmrc \
     && npm ci \
