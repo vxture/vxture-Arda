@@ -23,10 +23,10 @@ Two branches map to two environments. `beta` is an ENVIRONMENT, not a branch:
 pushing `develop` deploys the beta stack; promoting to `main` deploys prod.
 
 - `main` - production source. Updating `main` == "release approved for prod".
-  A push to `main` deploys the prod stack (`arda.vxture.com`, `/srv/arda`).
+  A push to `main` deploys the prod stack (`arda.vxture.com`, `/srv/md0/arda`).
 - `develop` - integration branch. All feature work merges here first. A push to
   `develop` deploys the beta/pre-release stack (`beta-arda.vxture.com`,
-  `/srv/arda-beta`).
+  `/srv/md1/arda-beta`).
 - `claude-memory` - independent Claude memory versioning line. NOT part of the
   product pipeline; never merge it into `develop`/`main`.
 
@@ -85,10 +85,10 @@ re-fires the downstream release/deploy chain.
 ```
 feature -> PR to develop -> ci (quality-gate) -> squash-merge to develop
   -> release on develop: detect -> docker-build (arda-app)
-       -> deploy beta stack (/srv/arda-beta on worker-02)
+       -> deploy beta stack (/srv/md1/arda-beta on worker-02)
   -> promote.yml (manual, fast-forward) -> main
        -> release on main: detect -> docker-build (retag-by-digest if unchanged)
-       -> deploy prod stack (/srv/arda on worker-02)
+       -> deploy prod stack (/srv/md0/arda on worker-02)
 ```
 
 Workflows: `.github/workflows/{ci,promote,release}.yml`. `docker-build` and
@@ -132,7 +132,7 @@ UI must consume `@vxture/design-system` primitives rather than re-implementing
 them. Raw ad-hoc styling that bypasses the DS fails the gate.
 
 Deploy contracts hold the one-image, two-stack reality: the build emits exactly
-`arda-app`; prod resolves to `/srv/arda` and beta to `/srv/arda-beta` on
+`arda-app`; prod resolves to `/srv/md0/arda` and beta to `/srv/md1/arda-beta` on
 worker-02; the two stacks must not share runtime state. TLS and the public
 domain live on the shared worker-01 edge (wildcard `*.vxture.com`); arda only
 contributes the vhost source artifacts in `configs/edge/*.conf` and runs no

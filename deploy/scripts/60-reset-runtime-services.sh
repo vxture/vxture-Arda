@@ -60,7 +60,7 @@ resolve_reset_target() {
   fi
 
   resolved="$(realpath -m "$target")"
-  root_resolved="$(realpath -m "${ROOT_DIR:-/srv/arda}")"
+  root_resolved="$(realpath -m "${ROOT_DIR:-/srv/md0/arda}")"
   repo_resolved="$(realpath -m "$REPO_DIR")"
 
   case "$resolved" in

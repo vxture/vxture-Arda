@@ -7,8 +7,8 @@ if [[ "$_ENV_LOADED" == "0" ]]; then
   DEPLOY_DIR="$(cd "$_ARDA_LIB_DIR/.." && pwd)"
   # lib/ sits under the DISPOSABLE deploy dir (CI rsyncs it fresh each release).
   # The operator .env is NOT kept there; it lives under the persistent root at
-  # $PROJECT_ROOT/etc/.env (PROJECT_ROOT = the /srv/arda[-beta] root, lib/../..).
-  # Pointing PROJECT_ROOT at /srv/arda vs /srv/arda-beta is what makes the same
+  # $PROJECT_ROOT/etc/.env (PROJECT_ROOT = the /srv/md0/arda[-beta] root, lib/../..).
+  # Pointing PROJECT_ROOT at /srv/md0/arda vs /srv/md1/arda-beta is what makes the same
   # scripts deploy either stack.
   PROJECT_ROOT="$(cd "$_ARDA_LIB_DIR/../.." && pwd)"
 

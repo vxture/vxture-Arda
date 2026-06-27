@@ -330,6 +330,47 @@ jobs:
           fi
           chmod 600 ~/.ssh/known_hosts
 
+      - name: Bootstrap environment on target host
+        shell: bash
+        env:
+          DEPLOY_ENV: ${{ needs.detect.outputs.environment }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          ENV_FILE_B64: ${{ secrets.ENV_FILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          port="${DEPLOY_PORT:-22}"
+
+          # Compute stack root from environment
+          case "$DEPLOY_ENV" in
+            production) stack_root="/srv/md0/arda" ;;
+            beta)       stack_root="/srv/md1/arda-beta" ;;
+            *) echo "unknown environment: $DEPLOY_ENV" >&2; exit 1 ;;
+          esac
+
+          echo "[bootstrap] Checking $stack_root/etc/.env on $DEPLOY_HOST..."
+          if ssh -i ~/.ssh/deploy_key -p "$port" \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            -o ConnectTimeout=30 \
+            "$DEPLOY_USER@$DEPLOY_HOST" "test -f '$stack_root/etc/.env'"; then
+            echo "[bootstrap] $stack_root/etc/.env already exists - skipping"
+          else
+            echo "[bootstrap] Creating $stack_root/etc/.env from environment secret..."
+            ssh -i ~/.ssh/deploy_key -p "$port" \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=20 \
+              -o ConnectTimeout=30 \
+              "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$stack_root/etc'"
+            printf '%s' "$ENV_FILE_B64" | ssh -i ~/.ssh/deploy_key -p "$port" \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=20 \
+              -o ConnectTimeout=30 \
+              "$DEPLOY_USER@$DEPLOY_HOST" "base64 -d > '$stack_root/etc/.env' && chmod 600 '$stack_root/etc/.env'"
+            echo "[bootstrap] .env created successfully"
+          fi
+
       - name: Deploy over SSH
         shell: bash
         env:
@@ -353,8 +394,8 @@ jobs:
           # Per-environment default deploy directory; the DEPLOY_REPO_DIR
           # environment secret overrides it when set.
           case "$DEPLOY_ENV" in
-            production) default_dir="/srv/arda/deploy" ;;
-            beta)       default_dir="/srv/arda-beta/deploy" ;;
+            production) default_dir="/srv/md0/arda/deploy" ;;
+            beta)       default_dir="/srv/md1/arda-beta/deploy" ;;
             *) echo "unknown environment: $DEPLOY_ENV" >&2; exit 1 ;;
           esac
           deploy_dir="${DEPLOY_REPO_DIR:-$default_dir}"
