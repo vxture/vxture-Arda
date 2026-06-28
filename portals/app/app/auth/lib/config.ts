@@ -15,6 +15,12 @@ export interface OidcConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  // Public origin of this app (scheme + host + port), derived from redirectUri.
+  // User-facing redirects (callback landing, logout home, returnTo base) anchor
+  // to this instead of the request host: behind the shared edge proxy the
+  // request host resolves to the internal bind (0.0.0.0:3230), which would
+  // otherwise leak into Location headers (e.g. https://0.0.0.0:3230/?sso=...).
+  appOrigin: string;
   scopes: string;
   postLogoutRedirectUri: string;
   redisUrl: string;
@@ -32,6 +38,15 @@ export interface OidcConfig {
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
+}
+
+/** Origin (scheme + host + port) of an absolute URL, or "" if it is malformed. */
+function originOf(url: string): string {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -59,6 +74,7 @@ export function getOidcConfig(): OidcConfig | null {
       clientId: "arda",
       clientSecret: "mock-secret",
       redirectUri: "http://localhost:3230/auth/callback",
+      appOrigin: "http://localhost:3230",
       scopes: "openid profile email phone arda",
       postLogoutRedirectUri: "http://localhost:3230/",
       redisUrl,
@@ -82,12 +98,18 @@ export function getOidcConfig(): OidcConfig | null {
   const clientId = (process.env.OIDC_CLIENT_ID || "arda").trim();
   const redirectUri = (process.env.OIDC_REDIRECT_URI || "").trim();
   if (!clientId || !redirectUri || !redisUrl) return null;
+  // redirectUri is the registered, public callback URL; its origin is the
+  // authoritative public origin of this app. A malformed redirectUri leaves the
+  // RP unconfigured rather than silently falling back to the request host.
+  const appOrigin = originOf(redirectUri);
+  if (!appOrigin) return null;
 
   return {
     issuer,
     clientId,
     clientSecret,
     redirectUri,
+    appOrigin,
     scopes: (process.env.OIDC_SCOPES || "openid profile email phone arda").trim(),
     postLogoutRedirectUri: (process.env.OIDC_POST_LOGOUT_REDIRECT_URI || "").trim(),
     redisUrl,

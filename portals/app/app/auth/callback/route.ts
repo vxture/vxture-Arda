@@ -16,7 +16,10 @@ export const runtime = "nodejs";
  * same origin as the app and on failure simply returns to that origin's home.
  */
 async function oidcCallback(request: NextRequest, cfg: OidcConfig): Promise<NextResponse> {
-  const origin = request.nextUrl.origin;
+  // Anchor every Location to the configured public origin, not the request host:
+  // behind the edge proxy the request host is the internal bind (0.0.0.0:3230),
+  // which would surface to the browser as e.g. https://0.0.0.0:3230/?sso=failed.
+  const origin = cfg.appOrigin;
   const fail = (reason: string) => {
     const res = NextResponse.redirect(new URL(`/?sso=${encodeURIComponent(reason)}`, origin));
     clearLoginStateCookie(res, cfg);

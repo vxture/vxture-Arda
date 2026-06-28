@@ -42,7 +42,7 @@ async function handleLogout(request: NextRequest): Promise<NextResponse> {
   // Global logout: hand off to the IdP end_session (kills vx_sid + back-channel
   // fan-out). Without a post-logout URI (dev), degrade to local-only: land on
   // the app home instead of stranding the user on the IdP.
-  const localHome = new URL("/", request.nextUrl.origin).toString();
+  const localHome = new URL("/", cfg.appOrigin).toString();
   const dest = cfg.postLogoutRedirectUri ? buildEndSessionUrl(cfg, randomToken()) : localHome;
   const res = NextResponse.redirect(dest, { status: 303 });
   clearSessionCookie(res, cfg);
