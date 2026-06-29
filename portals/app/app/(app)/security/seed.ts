@@ -1,19 +1,14 @@
 /**
- * Static seed for Data Security (no DB yet). Classification distribution and
- * sharing-authorization requests for a generic intelligent data platform.
+ * Security presentation metadata + static demo for the parts not modelled in v1.
+ * The classification distribution / level strip / core / coverage now come from
+ * the DB (see data.ts). The sharing-request queue is a workflow with no v1
+ * entity, so it stays as static demo here (flagged) until an AccessRequest model
+ * exists.
  */
 import type { StatusBadgeTone } from "@vxture/design-system";
 import type { AssetLevel } from "../dashboard/seed";
 
 export { LEVEL_TONE, type AssetLevel } from "../dashboard/seed";
-
-/** Classification distribution; key matches the level i18n keys. */
-export const DIST: { key: AssetLevel; value: number; color: string }[] = [
-  { key: "public", value: 4820, color: "var(--vx-color-success-600)" },
-  { key: "internal", value: 5240, color: "var(--vx-color-info-600)" },
-  { key: "sensitive", value: 2180, color: "var(--vx-color-warning-500)" },
-  { key: "core", value: 607, color: "var(--vx-color-danger-600)" },
-];
 
 export const REQUEST_TONE: Record<string, StatusBadgeTone> = {
   pending: "warning",
@@ -25,7 +20,7 @@ export interface ShareRequest {
   asset: string;
   level: AssetLevel;
   time: string;
-  status: string; // pending | approved
+  status: string;
 }
 
 export const REQUESTS: ShareRequest[] = [

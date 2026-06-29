@@ -384,6 +384,7 @@
     "classify": "Run classification",
     "distTitle": "Classification distribution",
     "distCaption": "datasets",
+    "distEmpty": "No classified datasets in this workspace yet.",
     "reqTitle": "Sharing authorization",
     "reqSub": "Sensitive and core data need dual approval",
     "reqPending": "{count} pending",

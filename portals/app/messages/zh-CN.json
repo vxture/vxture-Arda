@@ -384,6 +384,7 @@
     "classify": "发起分类",
     "distTitle": "分级分类分布",
     "distCaption": "数据表",
+    "distEmpty": "该工作区暂无已分级的数据集。",
     "reqTitle": "共享授权申请",
     "reqSub": "敏感与核心数据需双重审批",
     "reqPending": "{count} 待审批",
