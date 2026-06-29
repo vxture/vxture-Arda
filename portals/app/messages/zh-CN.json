@@ -348,6 +348,30 @@
       "core": "核心"
     }
   },
+  "lineage": {
+    "eyebrow": "资产治理",
+    "title": "数据血缘",
+    "description": "追溯数据从源头到应用的全链路加工、流转与影响关系。",
+    "impact": "影响分析",
+    "fullscreen": "全屏",
+    "subject": "分析对象",
+    "type": {
+      "source": "数据源",
+      "job": "加工",
+      "table": "数据表",
+      "api": "服务",
+      "app": "应用"
+    },
+    "foot": {
+      "upstream": "上游节点",
+      "upstreamVal": "3 个数据源",
+      "job": "加工任务",
+      "downstream": "下游影响",
+      "downstreamVal": "2 表 · 1 服务 · 1 应用",
+      "impact": "影响评估",
+      "impactVal": "变更将影响 64 个订阅方"
+    }
+  },
   "placeholder": {
     "title": "正在开发中",
     "description": "该模块正在开发中，敬请期待。"

@@ -14,7 +14,11 @@
  */
 import type { ComponentType } from "react";
 import {
+  AppWindow,
+  ArrowRight,
   ArrowsClockwise,
+  ArrowsMerge,
+  ArrowsSplit,
   ArrowSquareOut,
   BookOpen,
   Clock,
@@ -52,6 +56,7 @@ import {
   LockKey,
   LockKeyOpen,
   MagnifyingGlass,
+  MagnifyingGlassPlus,
   MapTrifold,
   Medal,
   Minus,
@@ -71,7 +76,9 @@ import {
   TextAa,
   TextIndent,
   TextOutdent,
+  Table,
   Timer,
+  CornersOut,
   TrafficCone,
   TreeStructure,
   TrendDown,
@@ -90,7 +97,11 @@ import {
 } from "@phosphor-icons/react";
 
 const ICONS = {
+  "app-window": AppWindow,
+  "arrow-right": ArrowRight,
   "arrows-clockwise": ArrowsClockwise,
+  "arrows-merge": ArrowsMerge,
+  "arrows-split": ArrowsSplit,
   "arrow-square-out": ArrowSquareOut,
   "arrow-up": ArrowUp,
   "arrow-down": ArrowDown,
@@ -110,6 +121,7 @@ const ICONS = {
   clock: Clock,
   "clock-clockwise": ClockClockwise,
   columns: Columns,
+  "corners-out": CornersOut,
   "crown-simple": CrownSimple,
   database: Database,
   "dots-nine": DotsNine,
@@ -128,6 +140,7 @@ const ICONS = {
   "lock-key": LockKey,
   "lock-key-open": LockKeyOpen,
   "magnifying-glass": MagnifyingGlass,
+  "magnifying-glass-plus": MagnifyingGlassPlus,
   "map-trifold": MapTrifold,
   medal: Medal,
   minus: Minus,
@@ -144,6 +157,7 @@ const ICONS = {
   star: Star,
   stack: Stack,
   sun: Sun,
+  table: Table,
   "text-aa": TextAa,
   "text-indent": TextIndent,
   "text-outdent": TextOutdent,
