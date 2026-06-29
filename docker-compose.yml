@@ -60,7 +60,7 @@ services:
       # -- Domain data store (this stack's postgres container) ----------------
       # Used by the Prisma client (pg driver adapter) and by `migrate deploy` at
       # container start. Host is ${PROJECT_NAME}-db so prod/beta never collide.
-      DATABASE_URL: "${DATABASE_URL:-postgresql://arda:arda@arda-db:5432/arda?schema=public}"
+      DATABASE_URL: "${DATABASE_URL:-postgresql://arda:arda@${PROJECT_NAME:-arda}-db:5432/arda?schema=public}"
       RP_SESSION_TTL: "${RP_SESSION_TTL:-2592000}"
       RP_SESSION_COOKIE_NAME: "${RP_SESSION_COOKIE_NAME:-vx_rp_session}"
       # Host-only cookie (no leading dot): scoped to this exact domain.

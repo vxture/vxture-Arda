@@ -6,7 +6,10 @@
 set -e
 
 # prisma.config.ts + prisma/ live under the workspace dir (app/); run migrate
-# from there so its relative schema/migrations paths resolve.
-( cd app && prisma migrate deploy )
+# from there so its relative schema/migrations paths resolve. Non-fatal for now:
+# no route depends on the DB yet, so a migration/DB hiccup must not take the app
+# down (it would crash-loop the whole stack). Tighten to fatal once routes read
+# the DB.
+( cd app && prisma migrate deploy ) || echo "[entrypoint] WARN: prisma migrate deploy failed; starting app anyway"
 
 exec node app/server.js
