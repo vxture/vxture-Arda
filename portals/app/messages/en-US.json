@@ -348,6 +348,30 @@
       "core": "Core"
     }
   },
+  "lineage": {
+    "eyebrow": "Asset Governance",
+    "title": "Data Lineage",
+    "description": "Trace data from source to application across every transform, hop, and downstream impact.",
+    "impact": "Impact analysis",
+    "fullscreen": "Fullscreen",
+    "subject": "Subject",
+    "type": {
+      "source": "Source",
+      "job": "Transform",
+      "table": "Table",
+      "api": "Service",
+      "app": "Application"
+    },
+    "foot": {
+      "upstream": "Upstream",
+      "upstreamVal": "3 sources",
+      "job": "Transform job",
+      "downstream": "Downstream impact",
+      "downstreamVal": "2 tables - 1 service - 1 app",
+      "impact": "Impact assessment",
+      "impactVal": "A change affects 64 subscribers"
+    }
+  },
   "placeholder": {
     "title": "Under construction",
     "description": "This module is under construction. Stay tuned."
