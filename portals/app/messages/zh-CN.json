@@ -303,6 +303,51 @@
       "review": "评审中"
     }
   },
+  "quality": {
+    "eyebrow": "资产治理",
+    "title": "数据质量",
+    "description": "基于六大质量维度的稽核规则、问题分布与整改跟踪。",
+    "rules": "规则库",
+    "runAudit": "发起稽核",
+    "trendTitle": "质量得分趋势",
+    "trendSub": "近 10 个稽核周期",
+    "ratingGood": "持续向好",
+    "sixDim": "六维质量评估",
+    "execTitle": "稽核规则执行",
+    "execSub": "按通过率排序",
+    "metrics": {
+      "score": "质量总分",
+      "scoreTrend": "环比 +0.8",
+      "rules": "稽核规则",
+      "rulesTrend": "本月新增 36",
+      "issues": "发现问题",
+      "issuesTrend": "环比 -12%",
+      "pending": "待整改"
+    },
+    "col": {
+      "rule": "规则",
+      "target": "稽核对象",
+      "dim": "维度",
+      "level": "分级",
+      "pass": "通过率",
+      "issues": "问题数",
+      "trend": "趋势"
+    },
+    "dim": {
+      "completeness": "完整性",
+      "accuracy": "准确性",
+      "consistency": "一致性",
+      "timeliness": "及时性",
+      "uniqueness": "唯一性",
+      "validity": "有效性"
+    },
+    "level": {
+      "public": "公开",
+      "internal": "内部",
+      "sensitive": "敏感",
+      "core": "核心"
+    }
+  },
   "placeholder": {
     "title": "正在开发中",
     "description": "该模块正在开发中，敬请期待。"

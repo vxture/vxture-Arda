@@ -1152,3 +1152,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --------------------------------------------------------------- quality --- */
+.pass-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+.pass-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--vx-color-surface-muted);
+  overflow: hidden;
+}
+.pass-track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.pass-val {
+  font-size: 12px;
+  color: var(--vx-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  text-align: right;
+}
+.q-radar-center {
+  display: flex;
+  justify-content: center;
+}
