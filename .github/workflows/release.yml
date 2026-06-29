@@ -288,11 +288,29 @@ jobs:
             -o ConnectTimeout=30 \
             "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$deploy_dir'"
 
-          rsync_srcs=(deploy/ configs docker-compose.yml)
+          # Assemble the exact payload into one staging tree, then a SINGLE
+          # --delete rsync. rsync's --delete with multiple sources into one dest
+          # is unreliable - the delete pass for `deploy/` (contents into dest
+          # root) could drop the sibling `configs/` and `docker-compose.yml`,
+          # leaving the host on a stale compose. Staging makes --delete safe.
+          stage="$(mktemp -d)"
+          cp -a deploy/. "$stage/"
+          cp -a configs "$stage/configs"
+          cp -a docker-compose.yml "$stage/docker-compose.yml"
           rsync -az --delete --exclude='VERSION' \
             -e "ssh -i ~/.ssh/deploy_key -p $port -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ConnectTimeout=30" \
-            "${rsync_srcs[@]}" \
+            "$stage/" \
             "$DEPLOY_USER@$DEPLOY_HOST:$deploy_dir/"
+          rm -rf "$stage"
+
+          # Sanity-log what landed: confirm the compose the host will use carries
+          # the expected services (catches stale-compose delivery regressions).
+          ssh -i ~/.ssh/deploy_key -p "$port" \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            -o ConnectTimeout=30 \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "grep -q 'arda-db' '$deploy_dir/docker-compose.yml' && echo '[deliver] docker-compose.yml has arda-db' || echo '[deliver] WARN: arda-db missing in $deploy_dir/docker-compose.yml'"
 
           ssh -i ~/.ssh/deploy_key -p "$port" \
             -o ServerAliveInterval=30 \
