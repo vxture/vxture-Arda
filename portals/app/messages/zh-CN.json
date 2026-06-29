@@ -429,6 +429,8 @@
     "description": "将数据资产封装为标准 API，面向团队与应用统一供给。",
     "docs": "API 文档",
     "publish": "发布服务",
+    "emptyTitle": "暂无数据服务",
+    "emptyDesc": "为该工作区发布的数据服务将在此处展示。",
     "metrics": {
       "online": "在线服务",
       "onlineTrend": "本月发布 12",

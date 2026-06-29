@@ -219,18 +219,25 @@ model LineageEdge {
 // --------------------------------------------------------------- services ----
 
 model DataService {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   workspaceId String
+  code        String // display id, e.g. API-1042
   name        String
+  path        String // e.g. /api/v2/customer/verify
+  method      String     @default("GET") // GET | POST
+  description String?
+  domain      String?
+  level       AssetLevel @default(internal)
   type        String // rest_api | query | export | share
   config      Json?
-  status      String    @default("draft")
+  status      String     @default("draft") // running | review | paused
   publishedAt DateTime?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
 
   datasets DataServiceDataset[]
   apiKeys  ApiKey[]
 
+  @@unique([workspaceId, code])
   @@index([workspaceId])
 }
 

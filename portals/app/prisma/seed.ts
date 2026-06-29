@@ -81,6 +81,27 @@ const QUALITY_RULES: SeedRule[] = [
   { code: "Q-126", name: "Freshness SLA", datasetCode: "dw_churn_scores", type: "freshness", dimension: "timeliness", prevScore: 89.5, score: 88.7, issues: 23400 },
 ];
 
+interface SeedService {
+  code: string;
+  name: string;
+  path: string;
+  method: string;
+  domain: string;
+  level: AssetLevel;
+  type: string;
+  status: string;
+  description: string;
+}
+
+const SERVICES: SeedService[] = [
+  { code: "API-1042", name: "Customer Verify", path: "/api/v2/customer/verify", method: "POST", domain: "customer", level: "core", type: "rest_api", status: "running", description: "Verify a customer by identifier and return a masked profile summary." },
+  { code: "API-2087", name: "Org Lookup", path: "/api/v2/org/entity", method: "GET", domain: "finance", level: "internal", type: "rest_api", status: "running", description: "Look up an organization's registration and status by unified identifier." },
+  { code: "API-3310", name: "Geocode", path: "/api/v2/geo/geocode", method: "GET", domain: "operations", level: "public", type: "rest_api", status: "running", description: "Forward and reverse geocoding against the standard address library." },
+  { code: "API-4521", name: "Risk Score", path: "/api/v2/risk/score", method: "POST", domain: "customer", level: "core", type: "rest_api", status: "review", description: "Return a customer risk score; requires approval before invocation." },
+  { code: "API-5093", name: "Realtime Heatmap", path: "/api/v2/web/heatmap", method: "GET", domain: "web", level: "sensitive", type: "query", status: "running", description: "Aggregated realtime activity heatmap, refreshed every 5 minutes." },
+  { code: "API-6320", name: "Inventory Report", path: "/api/v2/ops/report", method: "POST", domain: "operations", level: "internal", type: "rest_api", status: "paused", description: "Submit and retrieve inventory reconciliation reports." },
+];
+
 async function main(): Promise<void> {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
@@ -152,13 +173,23 @@ async function main(): Promise<void> {
     });
   }
 
+  for (const s of SERVICES) {
+    await prisma.dataService.upsert({
+      where: { workspaceId_code: { workspaceId: WORKSPACE_ID, code: s.code } },
+      update: { name: s.name, path: s.path, method: s.method, domain: s.domain, level: s.level, type: s.type, status: s.status, description: s.description },
+      create: { workspaceId: WORKSPACE_ID, ...s },
+    });
+  }
+
   const count = await prisma.dataset.count({ where: { workspaceId: WORKSPACE_ID } });
   const stdCount = await prisma.standard.count({ where: { workspaceId: WORKSPACE_ID } });
   const ruleCount = await prisma.qualityRule.count({ where: { workspaceId: WORKSPACE_ID } });
+  const svcCount = await prisma.dataService.count({ where: { workspaceId: WORKSPACE_ID } });
   // eslint-disable-next-line no-console
   console.log(
-    `Seeded ${DATASETS.length} datasets, ${STANDARDS.length} standards, ${QUALITY_RULES.length} quality rules; ` +
-      `workspace ${WORKSPACE_ID} has ${count} datasets, ${stdCount} standards, ${ruleCount} rules.`,
+    `Seeded ${DATASETS.length} datasets, ${STANDARDS.length} standards, ${QUALITY_RULES.length} quality rules, ` +
+      `${SERVICES.length} services; workspace ${WORKSPACE_ID} has ${count} datasets, ${stdCount} standards, ` +
+      `${ruleCount} rules, ${svcCount} services.`,
   );
   await prisma.$disconnect();
 }

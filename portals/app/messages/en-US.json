@@ -429,6 +429,8 @@
     "description": "Package data assets as standard APIs and serve them to teams and applications.",
     "docs": "API docs",
     "publish": "Publish service",
+    "emptyTitle": "No services yet",
+    "emptyDesc": "Published data services for this workspace will appear here.",
     "metrics": {
       "online": "Online Services",
       "onlineTrend": "+12 this month",
