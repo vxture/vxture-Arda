@@ -119,6 +119,15 @@
     "topTitle": "热门数据资产",
     "topSub": "按订阅与调用热度排序",
     "topLink": "进入资产目录",
+    "noData": "暂无数据",
+    "team": {
+      "platform": "数据平台",
+      "analytics": "分析",
+      "engineering": "工程",
+      "growth": "增长",
+      "finance": "财务",
+      "ops": "运营"
+    },
     "col": {
       "asset": "数据资产",
       "domain": "主题域",

@@ -119,6 +119,15 @@
     "topTitle": "Popular Data Assets",
     "topSub": "Ranked by subscriptions and call volume",
     "topLink": "Open catalog",
+    "noData": "No data yet",
+    "team": {
+      "platform": "Data Platform",
+      "analytics": "Analytics",
+      "engineering": "Engineering",
+      "growth": "Growth",
+      "finance": "Finance",
+      "ops": "Operations"
+    },
     "col": {
       "asset": "Data Asset",
       "domain": "Domain",
