@@ -303,6 +303,51 @@
       "review": "In review"
     }
   },
+  "quality": {
+    "eyebrow": "Asset Governance",
+    "title": "Data Quality",
+    "description": "Audit rules, issue distribution, and remediation tracking across the six quality dimensions.",
+    "rules": "Rule library",
+    "runAudit": "Run audit",
+    "trendTitle": "Quality score trend",
+    "trendSub": "Last 10 audit cycles",
+    "ratingGood": "Improving",
+    "sixDim": "Six-dimension assessment",
+    "execTitle": "Rule execution",
+    "execSub": "Ranked by pass rate",
+    "metrics": {
+      "score": "Overall Score",
+      "scoreTrend": "+0.8 MoM",
+      "rules": "Audit Rules",
+      "rulesTrend": "+36 this month",
+      "issues": "Issues Found",
+      "issuesTrend": "-12% MoM",
+      "pending": "Pending Fixes"
+    },
+    "col": {
+      "rule": "Rule",
+      "target": "Target",
+      "dim": "Dimension",
+      "level": "Level",
+      "pass": "Pass rate",
+      "issues": "Issues",
+      "trend": "Trend"
+    },
+    "dim": {
+      "completeness": "Completeness",
+      "accuracy": "Accuracy",
+      "consistency": "Consistency",
+      "timeliness": "Timeliness",
+      "uniqueness": "Uniqueness",
+      "validity": "Validity"
+    },
+    "level": {
+      "public": "Public",
+      "internal": "Internal",
+      "sensitive": "Sensitive",
+      "core": "Core"
+    }
+  },
   "placeholder": {
     "title": "Under construction",
     "description": "This module is under construction. Stay tuned."
