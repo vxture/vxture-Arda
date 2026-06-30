@@ -20,11 +20,15 @@ export type ArdaState = "trial" | "subscribed" | "expired" | "free";
 
 // -- Subscription tiers -------------------------------------------------------
 
-/** Commercial subscription tier. Meaningful when state = "subscribed". */
-export type Tier = "free" | "pro" | "team" | "enterprise";
+/** Commercial subscription tier. Meaningful when state = "subscribed".
+ *  Five tiers per the entitlement ADR (docs/ADR-entitlement-and-workspace.md):
+ *  free < starter < pro < business < enterprise. The platform is the source of
+ *  truth for which tier a (workspace, product=arda) subscription holds; arda
+ *  only consumes the value. */
+export type Tier = "free" | "starter" | "pro" | "business" | "enterprise";
 
 /** Ordered tiers, lowest to highest. The index is the tier rank. */
-export const TIER_ORDER: readonly Tier[] = ["free", "pro", "team", "enterprise"];
+export const TIER_ORDER: readonly Tier[] = ["free", "starter", "pro", "business", "enterprise"];
 
 /** Numeric rank for a tier (higher = more entitled). */
 export function tierRank(tier: Tier): number {
@@ -41,9 +45,10 @@ export function tierMeets(tier: Tier, min: Tier): boolean {
 /** The `arda` nested object inside the OIDC access token.
  *
  *  Invariants enforced by accounts.vxture.com:
- *    state=trial      -> tier = "pro" (full-feature trial); had_trial = false
- *                        until the user has been on trial, then true.
- *    state=subscribed -> tier in {pro, team, enterprise}
+ *    state=trial      -> tier = a platform-configured preview tier (e.g. pro or
+ *                        business); had_trial = false until the user has been on
+ *                        trial, then true.
+ *    state=subscribed -> tier in {starter, pro, business, enterprise}
  *    state=expired    -> tier = "free"
  *    state=free       -> tier = "free"
  *

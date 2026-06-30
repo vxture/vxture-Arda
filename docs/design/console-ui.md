@@ -99,7 +99,7 @@ Sidebar 顶部 `side-domain` 显示「当前 route 所属 board」的名称。la
 
 1. **功能切换** `vxh-launcher`（`ph-dots-nine`）-> 弹出 `vxh-board-list` / `vxh-applauncher`。
 2. **logo** `vxh-logo`（白色 logo）。
-3. **产品名 + plan 标签** `vxh-brand-name` + `vxh-brand-tag is-<plan>`，`PLAN_TAGS = {free:FREE, pro:PRO, team:TEAM, enterprise:ENT}`。
+3. **产品名 + plan 标签** `vxh-brand-name` + `vxh-brand-tag is-<plan>`。设计源演示值为旧 4 档（team），**实现按 ADR 五档** `PLAN_TAGS = {free:FREE, starter:STARTER, pro:PRO, business:BIZ, enterprise:ENT}`（见 §4.2 与 [[entitlement-direction]]）。
 4. **分割线** `vxh-divider`。
 5. **预留外链槽** `vxh-extslot`（一级外部链接预留）。
 6. **弹性留白**（grid 弹性列）。

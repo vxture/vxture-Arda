@@ -40,7 +40,7 @@ export const NAV: NavGroup[] = [
     key: "sharing",
     items: [
       { key: "service", route: "/service", icon: "broadcast" },
-      { key: "etl", route: "/etl", icon: "flow-arrow", future: true },
+      { key: "etl", route: "/etl", icon: "flow-arrow" },
     ],
   },
 ];

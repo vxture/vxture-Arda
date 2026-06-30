@@ -82,6 +82,14 @@
   background: var(--vx-color-brand-100);
   color: var(--vx-color-brand-700);
 }
+.vxh-brand-tag.is-free {
+  background: var(--vx-color-surface-muted);
+  color: var(--vx-color-text-muted);
+}
+.vxh-brand-tag.is-starter {
+  background: var(--vx-color-info-surface);
+  color: var(--vx-color-info-600);
+}
 .vxh-brand-tag.is-pro {
   background: var(--vx-color-ai-soft);
   color: var(--vx-color-ai-foreground);

@@ -11,6 +11,6 @@ export const DEFAULT_LANDING: string =
 /**
  * Minimum subscription tier required to use the app. Anything below this (or an
  * inactive subscription) is shown the upgrade screen by the EntitlementGate.
- * Override with MIN_TIER (e.g. "team") without a code change.
+ * Override with MIN_TIER (e.g. "business") without a code change.
  */
 export const MIN_TIER: Tier = (process.env.MIN_TIER as Tier) ?? "pro";
