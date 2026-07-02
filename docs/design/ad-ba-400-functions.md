@@ -88,16 +88,16 @@
 
 ---
 
-## 4. 提议能力键汇总（待补入 feature-key 目录）
+## 4. 新增能力键（已补入 feature-key 目录）
 
-功能设计中浮现、**`domain-entities-and-feature-keys.md` §3.1 尚未列**的键，集中登记待补入目录（en 维度）：
+功能设计中浮现的键，**已补入** [`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §3.1：
 
-| 提议键 | 功能 | 用途 |
-|---|---|---|
-| `arda.governance.standards` | 标准（`ba-431`） | 数据标准管理（现无独立键） |
-| `arda.governance.master_data` | 主数据（`ba-432`） | 主数据/金记录治理（现无独立键） |
+| 键 | 功能 | 用途 | 状态 |
+|---|---|---|---|
+| `arda.governance.standards` | 标准（`ba-431`） | 数据标准管理 | 已入目录 |
+| `arda.governance.master_data` | 主数据（`ba-432`） | 主数据/金记录治理 | 已入目录 |
 
-> 说明：**元数据功能（`ba-422`）复用现有 `arda.assets.edit_metadata`/`glossary`/`advanced_search`，不新增键**。上表两键需 arda 与平台确认后补入目录（键由产品定义、开哪些档由平台下发，ADR §3.4）。
+> 说明：**元数据功能（`ba-422`）复用现有 `arda.assets.edit_metadata`/`glossary`/`advanced_search`，不新增键**。键由 arda 定义，每档开放与否由平台订阅配置下发（ADR §3.4）。
 
 ---
 

@@ -24,45 +24,48 @@
 
 **地基现状（已就绪，可依赖）**：数据层（da）Prisma+Postgres 已落地（`0001~0005`）；workspace 隔离范式、`SeedTemplate` 首次进入填充、entitlement 五档/`none` 对齐均已就位或在途 PR。
 
+> **两个视角**：本 §1 是**板块/屏幕视角**（看得到什么）；**功能贯通视角**（每个功能哪一环断了）见 [`ba-400`](ad-ba-400-functions.md) §3 断链看板——实施主线 A 按其逐条排期。
+
 ---
 
-## 2. 目标态差距（按优先级归类）
+## 2. 两条实施主线（正交）
 
-| 类别 | 差距 | 涉及 |
+实施 = 两件事，正交并行：
+
+| 主线 | 目标 | 来源（backlog） |
 |---|---|---|
-| **A. 门控地基** | 无两轴门控；`Subscription` 缺 `features/quota`；`roles` 未消费 | 跨全板块（`ba-100` §3.2、functional-domains §5） |
-| **B. 界面缺口** | 数据源登记、术语表/标签、admin(keys/audit) 无界面 | `ba-220/21/25` |
-| **C. 接库缺口** | 血缘 UI 走静态 seed | `ba-230` |
-| **D. 对外契约** | services 对外不变量（分级过滤/审计/配额）未收口 | `ba-240`、agent-support |
-| **E. future** | pipelines/scheduling/realtime、`Field` 列级、telemetry | `ba-220/23/24` |
+| **A · 功能贯通** | 让每个数据功能**端到端能用** | [`ba-400`](ad-ba-400-functions.md) §3 **断链看板**（接通断链 = 实施） |
+| **B · 门控地基** | 让平台按**订阅/权限**门控 | functional-domains §5-7（两轴门控） |
+
+> A 让功能"能用"，B 让功能"该谁用"。都要做：A 是用户价值，B 是安全边界。本文按此两线排期；断链编号（`I-BL1`/`Q-BL1`…）逐条见各 `ba-4xx` §3。
 
 ---
 
 ## 3. 分阶段落地路线
 
-> 原则：**先补门控地基（A），再补界面（B/C），再收口对外（D），future（E）按需**。门控是安全边界，界面是体验，顺序不能反（否则界面建好却无板块级门控，等于裸奔）。
+> 原则：**门控地基（B）与关键界面/执行器先行**（否则功能没门控=裸奔、没执行器=断链）；再沿断链**关键路径**打通功能贯通（A）；共性断链一处补；破坏性/schema 决策最后；future 按需。
 
-### 阶段 0 · 门控地基（最高优先，跨板块）
-- 扩 `Subscription` 类型加 `features[] / quota{}`（functional-domains §5.1）。
-- 接**域级二元开关**（`arda.<板块>.baseline`）+ **路由级布局校验** `(app)/<板块>/layout.tsx`（functional-domains §4.2）。
-- 消费 `session.roles`，先落 `admin` 板块的权限门控（风险最低、收益直观）。
-- 依赖：`en` 维度权益实时拉取（平台只读端点）——未就绪前用 claim 携带的 features/quota 过渡。
-- **验收**：平台配一条订阅 → 某板块即时可见/隐藏；`viewer` 看不到 admin。
+### 阶段 0 · 地基（最高优先，两块并行）
+- **B 门控地基**：扩 `Subscription` 加 `features[]/quota{}`（functional-domains §5.1）；域级二元开关 + 路由级布局校验 `(app)/<板块>/layout.tsx`；消费 `session.roles`（先 `admin`，`ba-250`）。依赖 `en` 权益实时拉取，未就绪用 claim 过渡。
+- **关键界面/执行器缺口**（功能贯通前置）：数据源登记界面（`I-BL1`，`ba-410`）；admin 界面（审计写入落点，`ba-250`）。
+- **验收**：平台配一条订阅 → 板块即时可见/隐藏；`viewer` 看不到 admin。
 
-### 阶段 1 · 补界面缺口（B）
-- 建**数据源登记界面**（`ba-220`）+ `connectionConfig` 加密封装。
-- 建 **admin：API Key 管理 + 审计日志查看**（`ba-250`）。
-- 建**术语表/标签管理**（`ba-210`）。
+### 阶段 1 · 功能贯通关键路径（A，`ba-400` §3）
+沿断链关键路径把价值链打通：
+- `I-BL1` 接入生成资产 → `Q-BL1`+`Q-BL2` 质量真跑 + 卡服务准入 → `L-BL1` 血缘接库 → `Sec-BL1`+`Sec-BL2` 脱敏 + 对外分级过滤 → `Svc-BL1` 对外契约收口。
+- **验收**：一份数据 接入→治理(质量/分级)→画像可信→发布为服务，**端到端跑通**（`ba-110` §3 价值闭环）。
 
-### 阶段 2 · 血缘接库（C）
-- lineage 屏从静态 seed 改读 `LineageEdge`（数据集级图，`ba-230`）。
+### 阶段 2 · 共性断链（一处补、多功能受益）
+- **审计写入**统一封装：`Q-BL3`/`Sec-BL3`/`Svc-BL5`/`Lc-BL4`/`S-BL4`/`M-BL4`/`L-BL4`/`MD-BL6`。
+- **调度**（scheduling）：质量跑批 `Q-BL1`、接入同步 `I-BL2`、血缘采集 `L-BL2`。
+- **画像结果面聚合** `A-BL1`（随各功能结果环接通逐步点亮）、元数据策展 `MD-BL1/BL3`。
 
-### 阶段 3 · 对外契约收口（D）
-- services 发布/调用路径补齐对外不变量：分级过滤、`ApiKey` 校验、`AuditLog` 写入、`api_requests_monthly` 配额（`ba-240` §5、agent-support §3.2）。
-- 补齐 `AuditLog` 写入点（对外取数/敏感写/平台指令）。
+### 阶段 3 · schema 决策 + 破坏性
+- `Lc-BL3` 软删 schema 决策（多表加 `deletedAt`）→ `Lc-BL2` `wipe`（平台指令通道，`if` 维度）。
+- `S-BL1` 符合性关联、`M-BL1` 金记录标记（轻量迁移）。
 
-### 阶段 4 · future（E，按真实需求驱动）
-- `Pipeline/JobRun`（数据搬运）、`Field`（列级治理/血缘）、telemetry（真实调用统计）——**建表前置 = 真实业务需求**，不提前建。
+### 阶段 4 · future（按真实需求驱动）
+- `Pipeline/JobRun`（`I-BL2` 数据搬运）、`Field` 列级（`MD-BL2`/`A-BL5`）、telemetry（`Svc-BL3`）、重型 MDM（`M-BL2`）——**建表/建引擎前置 = 真实业务需求**，不提前建。
 
 ---
 

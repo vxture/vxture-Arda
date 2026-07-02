@@ -96,6 +96,8 @@
 | `arda.integration.pipelines` | future | 构建管道 / 变换 |
 | `arda.integration.scheduling` | future | 定时同步 |
 | `arda.integration.realtime` | future | 流式 / CDC |
+| `arda.governance.standards` | v1 | 数据标准管理（代码集 / 数据元 / 参考数据） |
+| `arda.governance.master_data` | v1 | 主数据 / 金记录治理（MDM，轻量） |
 | `arda.governance.policies` | v1 | 访问 / 脱敏 / 留存策略 |
 | `arda.governance.classification` | v1 | 自动 / PII 分类 |
 | `arda.governance.lineage` | v1 | 血缘图（数据集级） |
@@ -106,6 +108,7 @@
 | `arda.admin.audit_log` | v1 | 查看 / 导出审计日志 |
 
 > 已移除：`arda.admin.advanced_security`（SSO / 高级安全属身份层，归平台 / IdP）。
+> 新增（2026-07-02，源自业务架构功能设计 `ba-431`/`ba-432`）：`arda.governance.standards`、`arda.governance.master_data`。键由 arda 定义；每档开放与否由平台订阅配置下发（ADR §3.4）。
 
 ### 3.2 配额键（数值）
 
