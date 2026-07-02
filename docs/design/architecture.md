@@ -28,6 +28,10 @@ ARDA_DEPLOY_HOST  (private compute, tailnet-only, no public IP)
     |- rpsess:<id>          -> RP session (identity claims, tier)
     |- rptok:<id>           -> Token bundle (access + refresh, server-side only)
     `- sid:<sid>            -> Back-channel logout index (OIDC sid -> RP session)
+  |
+  arda-db (Postgres 16, domain data, container-internal only)
+    `- domain business data (Dataset, DataSource, Policy, Quality, ...),
+       workspace-isolated by workspaceId. NOT session state, NOT subscription.
 ```
 
 The edge vhost (contributed as source artifacts in `configs/edge/`) proxies
@@ -79,14 +83,16 @@ Host ports (beta stack, same host):
 Containers (prod):
   arda-app       (Next.js OIDC RP / app-BFF)
   arda-redis     (server-side session store)
+  arda-db        (Postgres 16, domain/business data)
 
 Containers (beta, separate compose project on same host):
   arda-beta-app
   arda-beta-redis
+  arda-beta-db
 
-The two stacks never share a network, a container, a Redis instance, or a
-data directory. PROJECT_NAME drives both the Docker compose project name and
-the container_name prefix, ensuring zero collision.
+The two stacks never share a network, a container, a Redis instance, a Postgres
+instance, or a data directory. PROJECT_NAME drives both the Docker compose
+project name and the container_name prefix, ensuring zero collision.
 ```
 
 ---
@@ -104,6 +110,7 @@ determined entirely by which `.env` is loaded:
 | `DATA_DIR` | `/srv/md0/arda/data` | `/srv/md1/arda-beta/data` |
 | `APEX_DOMAIN` | `arda.vxture.com` | `beta-arda.vxture.com` |
 | `REDIS_URL` | `redis://arda-redis:6379` | `redis://arda-beta-redis:6379` |
+| `DATABASE_URL` | `postgresql://arda:...@arda-db:5432/arda` | `postgresql://arda:...@arda-beta-db:5432/arda` |
 | `MOCK_STATE` | `subscribed` | `trial` |
 | `NEXT_PUBLIC_APP_ENV` | `prod` | `beta` |
 
@@ -127,6 +134,12 @@ cookies are host-only, scoped to the exact domain (`arda.vxture.com` vs
 `beta-arda.vxture.com`). A login on prod creates a session in `arda-redis`; a
 login on beta creates a separate session in `arda-beta-redis`. These sessions
 are never shared or visible across stacks.
+
+**Domain data (isolated):** Each stack runs its own Postgres instance
+(`arda-db` vs `arda-beta-db`) with a separate data directory. Within a stack,
+domain rows are further isolated by `workspaceId` (the platform/IdP
+`active_workspace`); every query is force-filtered by it. Subscription/billing
+data is NOT stored here - it lives on the vxture platform.
 
 **Practical consequence:** The same user can be logged in on both stacks
 simultaneously with two independent sessions. EnvGuard redirects users to the
@@ -174,6 +187,7 @@ recreated on the next release.
 | 3230 (prod) | Tailnet only | arda-app | App HTTP, proxied by edge over tailscale |
 | 3231 (beta) | Tailnet only | arda-beta-app | App HTTP, proxied by edge over tailscale |
 | 6379 | Container-internal | arda-redis | Session store; never published to host |
+| 5432 | Container-internal | arda-db | Domain data store; never published to host |
 
 ---
 

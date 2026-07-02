@@ -1,7 +1,7 @@
-# Arda - two-service stack (app + redis) behind the shared public edge.
+# Arda - three-service stack (app + redis + postgres) behind the shared public edge.
 #
 # the deploy host is private compute (Tailscale-only, no public IP). This stack runs
-# arda-app + arda-redis ONLY. There is NO per-service nginx and NO TLS here:
+# arda-app + arda-redis + arda-db ONLY. There is NO per-service nginx and NO TLS here:
 # the shared public edge terminates TLS with the wildcard
 # *.vxture.com cert and reverse-proxies to arda-app's published port over
 # tailscale. See configs/edge/ for the vhost arda contributes to that edge.

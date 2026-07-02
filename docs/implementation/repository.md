@@ -9,7 +9,7 @@ Data-Arda/
 |-- CLAUDE.md                     # Repository working agreement (branch model, CI, contracts)
 |-- README.md                     # Quick start, architecture, deploy overview
 |-- .env.example                  # Authoritative config template; the real .env is git-ignored
-|-- docker-compose.yml            # Two-service stack (arda-app + arda-redis)
+|-- docker-compose.yml            # Three-service stack (arda-app + arda-redis + arda-db)
 |-- .gitleaks.toml                # Secret detection rules for CI
 |-- .editorconfig
 |-- .gitattributes
@@ -81,13 +81,18 @@ The Next.js application. All source under `portals/app/app/`:
 
 ```
 app/
-|-- (app)/                        # Auth-gated routes (requires active session)
+|-- (app)/                        # Auth-gated routes (requires active session).
+|   |                             # Each surface has a server-side data.ts that
+|   |                             # queries Prisma force-filtered by workspaceId.
 |   |-- layout.tsx                # Gated layout (session + entitlement check)
-|   |-- data-assets/overview/     # Default landing surface
-|   |-- integration/              # Integration configuration surface
-|   |-- management/               # Management tools surface
-|   |-- governance/               # Governance workflows surface
-|   `-- services/                 # Service management surface
+|   |-- dashboard/                # Overview dashboard (default landing)
+|   |-- catalog/                  # Data asset catalog (Dataset)
+|   |-- lineage/                  # Dataset-level lineage (LineageEdge)
+|   |-- quality/                  # Data quality rules + results
+|   |-- standards/                # Data standards (code sets / data elements)
+|   |-- security/                 # Governance: policies + classification
+|   |-- service/                  # Data services (APIs) + keys
+|   `-- etl/                      # Integration / ETL surface (static seed in v1)
 |-- api/
 |   |-- health/                   # GET /api/health -> { status: "ok" }
 |   `-- entitlement/              # GET /api/entitlement -> current entitlement JSON
@@ -113,11 +118,25 @@ app/
 |   |-- gate.tsx                  # Server component: checks subscription.status
 |   |-- env-guard.tsx             # Client component: EnvGuard cross-stack redirect
 |   `-- config.ts                 # Entitlement config from env
+|-- lib/
+|   `-- db.ts                     # Prisma client singleton (pg driver adapter, globalThis reuse)
 |-- ui/                           # Shell UI components (nav, layout chrome)
 |-- globals.css                   # Global styles
 |-- layout.tsx                    # Root layout (providers, metadata)
 |-- page.tsx                      # Root page (redirect to login or landing)
 `-- providers.tsx                 # React context providers
+```
+
+The domain data layer (Prisma 7 + PostgreSQL 16) lives beside `app/`:
+
+```
+portals/app/
+|-- prisma/
+|   |-- schema.prisma             # SoT for domain models (see design/arda-data-architecture-schema.md)
+|   |-- migrations/               # 0001_init .. 0005_service_fields (applied by entrypoint on start)
+|   |-- seed.ts / seed.sql        # dev-only sample data (SEED_WORKSPACE_ID=dev-ws-001)
+|-- generated/prisma/             # generated client (git-ignored, emitted at build)
+`-- docker-entrypoint.sh          # runs `prisma migrate deploy` (fatal) then starts the app
 ```
 
 ---

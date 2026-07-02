@@ -8,7 +8,9 @@
 
 ## 0. 与代码现状的前置说明（务必先读）
 
-经核对 arda 当前状态：**arda 目前没有数据层**（Redis-only，仅存 session/token，无 Prisma / 无 DB），且 tier 当前来自 **OIDC token claim**。
+> 更新（数据层已落地）：本 §0 原述"arda 目前没有数据层（Redis-only）"已过时。arda 现已引入 **Prisma 7 + PostgreSQL 16**（迁移 `0001`~`0005`，catalog-first），领域业务数据落本地库，Redis 退回仅存 session/token。数据层的形态见 [`design/arda-data-architecture.md`](design/arda-data-architecture.md)。以下判断（权益不在 arda 建表、数据层驱动力是领域数据）仍然成立且已被实现兑现。
+
+经核对 arda 早期状态：arda 曾经没有数据层（Redis-only，仅存 session/token，无 Prisma / 无 DB），且 tier 当前来自 **OIDC token claim**。
 
 两点关键澄清，决定数据层的真实形态：
 

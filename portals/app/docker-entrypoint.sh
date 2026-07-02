@@ -6,10 +6,12 @@
 set -e
 
 # prisma.config.ts + prisma/ live under the workspace dir (app/); run migrate
-# from there so its relative schema/migrations paths resolve. Non-fatal for now:
-# no route depends on the DB yet, so a migration/DB hiccup must not take the app
-# down (it would crash-loop the whole stack). Tighten to fatal once routes read
-# the DB.
-( cd app && prisma migrate deploy ) || echo "[entrypoint] WARN: prisma migrate deploy failed; starting app anyway"
+# from there so its relative schema/migrations paths resolve. Fatal: the (app)
+# route data layers now query the DB, so a half-migrated schema serving traffic
+# would surface runtime errors on real requests. Better to fail fast and let the
+# stack retry (restart: always) than to serve a schema that is behind the code.
+# The DB is gated service_healthy in compose, so a failure here means a genuine
+# migration problem, not a cold DB.
+( cd app && prisma migrate deploy )
 
 exec node app/server.js

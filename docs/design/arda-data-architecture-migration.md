@@ -24,9 +24,10 @@
 
 ## 2. 部署时的迁移执行
 
-- **容器启动自动迁移**：`docker-entrypoint.sh` 执行 `cd app && prisma migrate deploy`；**失败仅告警、仍启动应用**（`WARN: prisma migrate deploy failed; starting app anyway`）。
-  - 风险：迁移失败不会阻断部署，可能导致 schema 与代码不一致却仍对外服务。运维需盯 entrypoint 日志。
-  - 待评估（见 §5）：是否收紧为迁移失败即阻断启动。
+- **容器启动自动迁移**：`docker-entrypoint.sh` 执行 `cd app && prisma migrate deploy`；**失败即阻断启动**（`set -e`，迁移非零退出则容器退出，配合 `restart: always` 自动重试）。
+  - 依据：`(app)` 各 `data.ts` 已直连 Prisma 查询，半迁移的 schema 对外服务会在真实请求上报运行时错误；宁可 fail-fast 重试，也不带病服务。
+  - 前提：DB 在 compose 里被 `depends_on: service_healthy` 网关，因此此处失败代表真实迁移问题，而非冷启动未就绪。
+  - 历史：曾为「失败仅告警、仍启动」（前提是"当时无路由读 DB"）；该前提已不成立，故收紧为阻断。
 - **健康门槛**：compose 中 `arda-app` `depends_on: arda-db { condition: service_healthy }`，DB 健康后才起应用（但这只保证 DB 可连接，不保证迁移成功）。
 - **每栈独立执行**：prod 用 `DATABASE_URL=...@arda-db:5432/arda`，beta 用 `...@arda-beta-db:5432/arda`，互不影响。
 
@@ -42,7 +43,8 @@
 
 每栈数据目录：prod `/srv/md0/arda/data`、beta `/srv/md1/arda-beta/data`。
 
-**备份现状**：`deploy/scripts/55-backup-runtime-state.sh` 历史上面向 Redis 目录；**Postgres 数据目录的备份/恢复覆盖情况待确认**（见 §5 待办 —— 这是当前最值得优先核实的运维缺口）。
+**备份现状**：`deploy/scripts/55-backup-runtime-state.sh` 现已覆盖 Postgres —— 对运行中的 `${PROJECT_NAME}-db` 容器执行 `pg_dump -Fc` 逻辑备份（一致快照、可 `pg_restore`），写临时文件并经 `pg_restore --list` 完整性校验后才落 `postgres-<ts>.dump`，纳入 30 天保留清理。Redis 目录、`.env`、crontab 备份不变。
+> 恢复演练（restore drill）尚未固化为脚本/流程 —— 备份可用不等于恢复可用，建议后续补一条 `ops.sh restore` 或运维手册步骤（见 §5）。
 
 ---
 
@@ -94,25 +96,38 @@
 
 ## 5. 待办清单（按优先级）
 
-1. **确认 Postgres 备份覆盖**：`55-backup-runtime-state.sh` 是否已含 `${DATA_DIR}/postgres`；若无，先补运维缺口（数据丢失风险 > 功能缺口）。
-2. **决定迁移失败的启动策略**：继续「告警仍启动」还是收紧为「阻断启动」。
-3. **落地平台指令通道**：内部端点 + 服务间签名 + 幂等 + `AuditLog` 写入 + wipe 软删/延迟硬删。
-4. **落地权益实时拉取**：接平台只读端点后切换 `EntitlementResolver`，加 Redis 缓存 + invalidate 消费。
-5. **落地模板填充**：`SeedTemplate` 内容策展 + 首次进入检测 `seedStatus` + 克隆逻辑（先全量复制，重量模板可评估 copy-on-write）。
-6. **`ArdaState` 枚举对齐**：待平台 claim 契约确认 `free`/`none` 语义后统一修改。
+1. ~~**确认 Postgres 备份覆盖**~~ **[已完成]** `55-backup-runtime-state.sh` 已加 `pg_dump -Fc` 逻辑备份 + 完整性校验（见 §3）。
+2. ~~**决定迁移失败的启动策略**~~ **[已完成]** 收紧为「失败即阻断启动」（见 §2）。
+3. **补恢复演练/流程**：备份已就位，但恢复（`pg_restore`）尚无固化脚本或运维手册步骤 —— 补一条 `ops.sh restore` 或 runbook 步骤，并做一次演练验证 dump 可恢复。
+4. **落地平台指令通道**：内部端点 + 服务间签名 + 幂等 + `AuditLog` 写入 + wipe 软删/延迟硬删。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
+5. **落地权益实时拉取**：接平台只读端点后切换 `EntitlementResolver`，加 Redis 缓存 + invalidate 消费。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
+6. **落地模板填充**：`SeedTemplate` 内容策展 + 首次进入检测 `seedStatus` + 克隆逻辑（先全量复制，重量模板可评估 copy-on-write）。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
+7. **`ArdaState` 枚举对齐**：待平台 claim 契约确认 `free`/`none` 语义后统一修改。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
 
 ---
 
 ## 6. 与既有文档的漂移（需修正）
 
-数据层是中途引入的，若干文档仍停留在"Redis-only / 两服务"旧态：
+数据层是中途引入的，若干文档仍停留在"Redis-only / 两服务"旧态。§6 首批（下表）已修正：
 
 | 文档 | 旧述 | 现状 | 处理 |
 |---|---|---|---|
-| `ADR-entitlement-and-workspace.md` §0 | "arda 目前没有数据层（Redis-only，无 Prisma/无 DB）" | 已有 Prisma 7 + Postgres（0001~0005） | **需更新** §0 前置说明 |
-| `implementation/repository.md` | "docker-compose = 两服务（arda-app + arda-redis）"；无 `prisma/`；列旧 IA 路由 | 三服务（+arda-db）；有 `prisma/`；新 IA | **需更新** |
-| `design/architecture.md` | 容器拓扑仅 app+redis；env 表无 `DATABASE_URL` | +arda-db；每栈 `DATABASE_URL` | **需更新** |
-| `docker-compose.yml` 顶部注释 | "arda-app + arda-redis ONLY" | 含 arda-db | 注释需修 |
+| `ADR-entitlement-and-workspace.md` §0 | "arda 目前没有数据层（Redis-only，无 Prisma/无 DB）" | 已有 Prisma 7 + Postgres（0001~0005） | **[已修]** §0 加前置更新说明 |
+| `implementation/repository.md` | "docker-compose = 两服务（arda-app + arda-redis）"；无 `prisma/`；列旧 IA 路由 | 三服务（+arda-db）；有 `prisma/`；新 IA | **[已修]** 三服务 + prisma/ + 真实 IA |
+| `design/architecture.md` | 容器拓扑仅 app+redis；env 表无 `DATABASE_URL` | +arda-db；每栈 `DATABASE_URL` | **[已修]** 拓扑/端口/env/隔离段 |
+| `docker-compose.yml` 顶部注释 | "arda-app + arda-redis ONLY" | 含 arda-db | **[已修]** 三服务注释 |
+| `portals/app/docker-entrypoint.sh` 注释 | "no route depends on the DB yet" | 6 个 `data.ts` 已读 DB | **[已修]** 随 §2 收紧一并更新 |
+
+**仍待修（第二批，未在本轮处理）** —— 多为运维/模块文档只提 redis，未提 arda-db：
+
+| 文档 | 旧述 | 处理建议 |
+|---|---|---|
+| `docs/agent.md` | 容器表只列 arda-app / arda-redis | 加 arda-db 行 |
+| `docs/design/modules.md` | 无 `arda-db` 模块小节；"None. The app is stateless" | 补 arda-db 模块 + DATABASE_URL |
+| `docs/operations/operations.md` | 健康检查/日志只提 arda-redis | 加 arda-db 排障（`pg_isready`、连接、迁移日志） |
+| `docs/deployment/checklists.md` | 部署后核对只列 app/redis | 加 arda-db healthy + 迁移成功核对项 |
+| `docs/deployment/deployment.md` | env 表无 `DATABASE_URL`；连通性只测 redis | 加 DATABASE_URL + pg 连通性 |
+| `docs/specs/security.md` | 只述 Redis key space | 加 arda-db 数据面安全（内部网、无发布端口、连接凭据） |
 
 ---
 
@@ -121,3 +136,4 @@
 | 日期 | 变更 |
 |---|---|
 | 2026-06-30 | 首版：盘点 schema `0001`~`0005`，梳理三层文档结构（本文件 + `arda-data-architecture.md` + `arda-data-architecture-schema.md`），列出现状/目标差距与文档漂移 |
+| 2026-07-02 | P0/P1 收口：#1 Postgres 纳入备份（`pg_dump -Fc` + 校验）；#2 迁移失败收紧为阻断启动；#6 首批文档漂移修正（ADR §0 / repository.md / architecture.md / compose 注释 / entrypoint 注释），第二批漂移登记；新增 P2/P3 落地方案文档 `arda-data-arch-workplan.md` |
