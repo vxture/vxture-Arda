@@ -14,9 +14,13 @@
  *  trial      - new user on the beta stack; has not subscribed commercially.
  *  subscribed - active paid subscription; on the prod stack.
  *  expired    - subscription lapsed; on the prod stack at free tier.
- *  free       - direct-subscribed user whose subscription lapsed, or a user
- *               who subscribed directly without ever entering trial; on prod. */
-export type ArdaState = "trial" | "subscribed" | "expired" | "free";
+ *  none       - no active subscription: never subscribed, or a direct
+ *               subscription that lapsed; on prod at free tier.
+ *
+ *  Note: "none" is the subscription STATE (do you have one). The free TIER
+ *  ("free" in Tier) is a separate axis (which plan) - a state=none user sits at
+ *  tier=free, but the two names are deliberately distinct. */
+export type ArdaState = "trial" | "subscribed" | "expired" | "none";
 
 // -- Subscription tiers -------------------------------------------------------
 
@@ -50,7 +54,7 @@ export function tierMeets(tier: Tier, min: Tier): boolean {
  *                        trial, then true.
  *    state=subscribed -> tier in {starter, pro, business, enterprise}
  *    state=expired    -> tier = "free"
- *    state=free       -> tier = "free"
+ *    state=none       -> tier = "free"
  *
  *  had_trial = true iff the user ever entered a trial (opened beta). This
  *  gates the data-migration step on upgrade: direct-subscribe paths set
@@ -74,7 +78,7 @@ export interface Subscription {
  *
  *  trial / subscribed -> status active (user can access the app on their stack)
  *  expired            -> status expired (prod, free features, upgrade prompt)
- *  free               -> status none   (prod, free features, upgrade prompt) */
+ *  none               -> status none   (prod, free features, upgrade prompt) */
 export function subscriptionFromClaim(claim: ArdaClaim): Subscription {
   if (claim.state === "trial" || claim.state === "subscribed") {
     return { tier: claim.tier, status: "active" };

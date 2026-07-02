@@ -8,7 +8,15 @@ import type { IdentityClaims, TokenBundle } from "./session-store";
 import type { TokenSet } from "./oidc";
 import { type ArdaClaim, type ArdaState, type Tier, TIER_ORDER } from "../../entitlement/types";
 
-const ARDA_STATES: readonly ArdaState[] = ["trial", "subscribed", "expired", "free"];
+const ARDA_STATES: readonly ArdaState[] = ["trial", "subscribed", "expired", "none"];
+
+/** Transition shim: the platform is migrating the lifecycle state "free" ->
+ *  "none". Accept the legacy value on the wire during rollout so a version skew
+ *  between the platform and arda does not break gating. Remove once
+ *  accounts.vxture.com is guaranteed to emit only "none". */
+function normalizeState(raw: string): string {
+  return raw === "free" ? "none" : raw;
+}
 
 /**
  * Parse the `arda` nested claim from the access token.
@@ -18,8 +26,8 @@ const ARDA_STATES: readonly ArdaState[] = ["trial", "subscribed", "expired", "fr
  * A) Platform format (accounts.vxture.com v1):
  *      { subscribed: boolean, plan: string, status: "active"|"expired"|"none" }
  *    Limitations of this format:
- *      - Cannot distinguish "trial" from "free" (both have subscribed=false).
- *        Until the platform adds a `trial` flag, trial users appear as "free"
+ *      - Cannot distinguish "trial" from "none" (both have subscribed=false).
+ *        Until the platform adds a `trial` flag, trial users appear as "none"
  *        and EnvGuard cannot route them to the beta stack automatically.
  *      - `had_trial` is absent; defaults to false.
  *    => Requested platform additions: `trial: boolean`, `had_trial: boolean`.
@@ -44,16 +52,16 @@ function toArdaClaim(v: unknown): ArdaClaim | null {
     } else if (status === "expired") {
       state = "expired";
     } else {
-      // subscribed=false + status="active"|"none": cannot distinguish trial vs free.
-      // Default to "free" until platform adds a `trial` boolean field.
-      state = o.trial === true ? "trial" : "free";
+      // subscribed=false + status="active"|"none": cannot distinguish trial vs none.
+      // Default to "none" until platform adds a `trial` boolean field.
+      state = o.trial === true ? "trial" : "none";
     }
 
     return { state, tier, had_trial: o.had_trial === true };
   }
 
   // Format B: arda-native { state, tier, had_trial }
-  const state = typeof o.state === "string" ? o.state : "";
+  const state = normalizeState(typeof o.state === "string" ? o.state : "");
   if (!(ARDA_STATES as string[]).includes(state)) return null;
   const tier = typeof o.tier === "string" ? o.tier : "";
   return {

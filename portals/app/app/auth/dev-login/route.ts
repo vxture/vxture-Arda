@@ -4,16 +4,16 @@
  * session cookie so the app loads as an authenticated user.
  *
  * URL params (all optional, fall back to env vars):
- *   state     trial | subscribed | expired | free   (default: MOCK_STATE or "subscribed")
+ *   state     trial | subscribed | expired | none   (default: MOCK_STATE or "subscribed")
  *   tier      free | starter | pro | business | enterprise  (default: MOCK_TIER or "pro")
  *   had_trial true | false                           (default: false)
  *   returnTo  redirect target after login            (default: DEFAULT_LANDING or "/")
  *
  * Quick-switch URLs for manual testing:
  *   /auth/dev-login?state=trial&tier=pro
- *   /auth/dev-login?state=subscribed&tier=team
+ *   /auth/dev-login?state=subscribed&tier=business
  *   /auth/dev-login?state=expired
- *   /auth/dev-login?state=free
+ *   /auth/dev-login?state=none
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getOidcConfig } from "../lib/config";
@@ -24,7 +24,7 @@ import { type ArdaState, type ArdaClaim, type Tier, TIER_ORDER } from "../../ent
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const ARDA_STATES: readonly string[] = ["trial", "subscribed", "expired", "free"];
+const ARDA_STATES: readonly string[] = ["trial", "subscribed", "expired", "none"];
 
 export async function GET(request: NextRequest) {
   if (process.env.MOCK_AUTH !== "true" || process.env.NODE_ENV === "production") {
@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
   }
 
   const p = request.nextUrl.searchParams;
-  const stateRaw = p.get("state") ?? process.env.MOCK_STATE ?? "subscribed";
+  const stateParam = p.get("state") ?? process.env.MOCK_STATE ?? "subscribed";
+  // Legacy "free" still resolves to the current "none" state.
+  const stateRaw = stateParam === "free" ? "none" : stateParam;
   const tierRaw = p.get("tier") ?? process.env.MOCK_TIER ?? "pro";
   const hadTrial = p.get("had_trial") === "true";
 

@@ -61,8 +61,8 @@ if (tierMeets(subscription.tier, "pro")) { ... }
 
 ```typescript
 interface ArdaClaim {
-  state: ArdaState;        // "trial" | "subscribed" | "expired" | "free"
-  tier: Tier;              // "free" | "pro" | "team" | "enterprise"
+  state: ArdaState;        // "trial" | "subscribed" | "expired" | "none"
+  tier: Tier;              // "free" | "starter" | "pro" | "business" | "enterprise"
   had_trial: boolean;      // true iff user ever entered a trial
 }
 ```

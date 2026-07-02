@@ -16,7 +16,9 @@ export interface EntitlementResolver {
 export class MockEntitlementResolver implements EntitlementResolver {
   async resolve(claim: ArdaClaim | null): Promise<Subscription> {
     if (claim) return subscriptionFromClaim(claim);
-    const state = (process.env.MOCK_STATE as ArdaState) ?? "subscribed";
+    // Legacy MOCK_STATE=free still maps to the current "none" state.
+    const rawState = process.env.MOCK_STATE ?? "subscribed";
+    const state = (rawState === "free" ? "none" : rawState) as ArdaState;
     const tier = (process.env.MOCK_TIER as Tier) ?? "pro";
     return subscriptionFromClaim({ state, tier, had_trial: false });
   }

@@ -105,21 +105,21 @@ Authorization: <服务间凭证，见 3.4>
 - 无订阅时返回 `state=none, tier=free` + 该 free 档对应的 features/quota（**free 不是 404，是一条正常订阅行**，ADR §3.4「free 无特例」）。
 - arda 只查 `product=arda` 一行，不需要也不应看到其他产品订阅。
 
-### 3.2 枚举锁定（请平台书面确认，存在与 arda 代码现状的漂移）
+### 3.2 枚举锁定（arda 侧已对齐 ADR，请平台书面确认下发一致）
 
 ADR §3.1 定稿枚举：
 
 - `state = trial | subscribed | expired | none`
 - `tier  = free | starter | pro | business | enterprise`
 
-**注意 arda 代码现状与设计不一致，需双方对齐后 arda 改码**：
+**arda 代码现状已对齐 ADR**（`entitlement/types.ts`）：
 
-| 维度 | arda 代码现状（`entitlement/types.ts`） | ADR/设计目标 | 处理 |
+| 维度 | arda 代码现状（`entitlement/types.ts`） | ADR/设计目标 | 状态 |
 |---|---|---|---|
-| state | `trial / subscribed / expired / free` | `trial / subscribed / expired / none` | `free` → `none`，arda 改 |
-| tier | `free / pro / team / enterprise` | `free / starter / pro / business / enterprise` | 去 `team`，加 `starter / business`，arda 改 |
+| state | `trial / subscribed / expired / none` | `trial / subscribed / expired / none` | 已对齐；claim 解析保留 `free -> none` 迁移期兼容（`claims.ts`），平台完成迁移后可移除 |
+| tier | `free / starter / pro / business / enterprise` | `free / starter / pro / business / enterprise` | 已对齐 |
 
-请平台**以 ADR 五档为准**下发，arda 负责把代码枚举对齐到 ADR。若平台计费侧档位命名不同，请在此明确映射表。
+请平台**以 ADR 五档为准**下发；过渡期内平台可继续下发旧 `state="free"`，arda 会归一为 `none`。若平台计费侧档位命名不同，请在此明确映射表。
 
 ### 3.3 features / quota 的归属（ADR §3.4）
 
