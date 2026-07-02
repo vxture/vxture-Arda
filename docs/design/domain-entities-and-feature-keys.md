@@ -108,7 +108,7 @@
 | `arda.admin.audit_log` | v1 | 查看 / 导出审计日志 |
 
 > 已移除：`arda.admin.advanced_security`（SSO / 高级安全属身份层，归平台 / IdP）。
-> 新增（2026-07-02，源自业务架构功能设计 `ba-431`/`ba-432`）：`arda.governance.standards`、`arda.governance.master_data`。键由 arda 定义；每档开放与否由平台订阅配置下发（ADR §3.4）。
+> 新增（2026-07-02，源自业务架构功能设计 `biz-431`/`biz-432`）：`arda.governance.standards`、`arda.governance.master_data`。键由 arda 定义；每档开放与否由平台订阅配置下发（ADR §3.4）。
 
 ### 3.2 配额键（数值）
 

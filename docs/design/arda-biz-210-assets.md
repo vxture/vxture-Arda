@@ -1,16 +1,16 @@
-# 数据资产 板块详细设计（ad-ba-210-assets）
+# 数据资产 板块详细设计（arda-biz-210-assets）
 
 > 状态：第 2 层 · 详细设计（待评审）· 板块 `assets`
-> 上游：[`ba-100`](ad-ba-100-architecture.md)（总体架构）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.1/§3、[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.1
-> 跨切面（隔离/两轴门控/治理即信任/对外契约）见 `ba-100` §3，本文不重述
+> 上游：[`biz-100`](arda-biz-100-architecture.md)（总体架构）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.1/§3、[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.1
+> 跨切面（隔离/两轴门控/治理即信任/对外契约）见 `biz-100` §3，本文不重述
 
 ---
 
 ## 1. 板块定位
 
-把企业数据登记为**可发现、有口径、有负责人、有分级**的资产目录（catalog）——数据价值链的起点（`ba-100` §2）。
+把企业数据登记为**可发现、有口径、有负责人、有分级**的资产目录（catalog）——数据价值链的起点（`biz-100` §2）。
 
-**资产类型范围**（`ba-100` §0）：结构化（`table`/`view`/`stream`）+ 常规非结构化文件（文档/图片/表格，`type=file`）。**不含** GIS/三维/IoT 复杂孪生资产。文档/图片作为**资产**编目（元数据/分级/服务化），其 RAG/检索属其他产品。
+**资产类型范围**（`biz-100` §0）：结构化（`table`/`view`/`stream`）+ 常规非结构化文件（文档/图片/表格，`type=file`）。**不含** GIS/三维/IoT 复杂孪生资产。文档/图片作为**资产**编目（元数据/分级/服务化），其 RAG/检索属其他产品。
 
 ## 2. 现状（证据基准 origin/develop）
 
@@ -30,7 +30,7 @@
 | `arda.assets.advanced_search` | 保存/语义/高级搜索 | 增值 |
 | `arda.assets.bulk_ops` | 批量打标/分类 | 增值，写操作 |
 
-## 4. 数据模型（delta，schema 以 da 维度为准）
+## 4. 数据模型（delta，schema 以 arch 维度为准）
 
 | 实体 | 状态 | 关键点 |
 |---|---|---|
@@ -44,9 +44,9 @@
 ## 5. 屏幕/交互 + 对外契约
 
 - **屏幕**：catalog（列表/卡片双视图、facet 筛选、搜索）→ 资产详情（结构 tab、预览、质量、血缘入口、权限申请）。**新增**：术语表界面、标签管理界面。
-- **对外契约**：目录/元数据是对外消费方（含智能体）"发现有哪些可信数据"的入口（`ba-100` §3.4）；详情页的分级/质量/血缘构成可信度信号。
+- **对外契约**：目录/元数据是对外消费方（含智能体）"发现有哪些可信数据"的入口（`biz-100` §3.4）；详情页的分级/质量/血缘构成可信度信号。
 
-## 6. 门控（两轴，机制见 `ba-100` §3.2）
+## 6. 门控（两轴，机制见 `biz-100` §3.2）
 
 - **订阅**：域基线 = `arda.assets.catalog`；`edit_metadata`/`bulk_ops`/`advanced_search` 按档开放。
 - **权限**：浏览类全员（订阅内）；编辑元数据/批量操作建议 `editor+`（避免 viewer 改口径）。
@@ -56,4 +56,4 @@
 1. 建**术语表**独立界面（`arda.assets.glossary`）。
 2. 建**标签管理**界面（现仅内联）。
 3. 资产详情"权限申请表单"接**审批流**（现未接）——审批流归属待定（arda 内 vs 平台）。
-4. `Field`（列级）待"列级治理/血缘"真实需求驱动再建（与 `ba-230` 血缘对齐）。
+4. `Field`（列级）待"列级治理/血缘"真实需求驱动再建（与 `biz-230` 血缘对齐）。
