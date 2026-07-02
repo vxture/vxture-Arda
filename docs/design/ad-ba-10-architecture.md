@@ -48,6 +48,14 @@ arda = vxture 生态里的 **`data` Product = 通用数据平台（数据域）*
 > 「能力维度」= arda 管什么（13 项）；「板块」= 门控 / IA 的组织单位（5 个，`overview` 恒开除外）。多维度可归同一板块（governance 承载标准 / 参考主数据 / 质量 / 血缘 / 安全 / 策略 / 生命周期）。
 > 补齐维度的实现成熟度不一：血缘 / 安全 / 元数据已有实体或屏幕（见 `ba-21`/`ba-23`）；**生命周期（留存 / 销毁）、存储、主数据目前薄或空**（`arda.quota.history_retention_days`/`storage_bytes` 已有键，wipe 见 ADR §5.1 未实现；主数据见下）——落地见 `ba-30`。
 > **主数据（MDM）深度决策**：arda 天然承担主数据的**编目 / 治理 / 标准 / 质量 / 服务化**（把主数据资产标为权威金记录、指定 steward、加质量规则、发布主数据服务）——与现有 `Dataset`+steward+`QualityRule` 模型一致，轻量即可落地。**重型 MDM 引擎**（实体匹配 / 合并 / 存活规则 survivorship / 建模工作流）是否在 arda 内建为**待定深度项**：可作 governance 增值能力，或独立成 MDM 能力/产品（类比 GIS/孪生"另有产品"，但主数据更核心，倾向留在 arda）。**参考数据**（代码集 / 数据元）已由 `Standard` 覆盖。
+
+### 1.1 功能域如何划分（域 vs 维度）
+
+能力**维度**（13）多于功能**域**（5），故按"**同一门控 / 运营单位**"归并，而非一维一域——一维一域会让门控矩阵爆炸（functional-domains §2.2 已论证）。5 域：`assets`（含元数据）、`integration`、`governance`、`services`、`admin`。
+
+- **`governance` 最重**，同时承载**定义域**（标准 / 参考数据 / **主数据**）与**管控域**（质量 / 血缘 / 安全 / 策略 / 生命周期）。域内用**能力键**区分粒度（两级：域 + 键），如 `arda.governance.master_data` / `.standards` / `.quality` / `.lineage` / `.security` / `.policies` 各自可单独开通 / 定价，**无需为主数据/标准拆独立域**。
+- **主数据归 `governance`，不归 `assets`**（理由见 `ba-23` §1）：资产域=有哪些数据；治理域=哪份权威 / 可信。
+- **可选拆分**：若产品把「主数据 / 数据标准」当旗舰模块单独售卖，可拆出**第 6 域「数据定义（标准+主数据）」**，代价是门控矩阵增一列。**建议先用能力键分层，确有需要再拆域**（先键后域，避免过早增加门控复杂度）。
 > 能力键 / 配额键目录见 [`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §3；各板块细目见 `ba-21..25`。
 
 ---
