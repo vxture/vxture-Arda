@@ -7,7 +7,7 @@
 Arda follows the Vxture App Integration Standard v1.0. The upstream authoritative
 specification is maintained in the vxture/umbra repository at:
 
-  `docs/design/identity-app-integration-standard.md`
+  `docs/20-design/identity-app-integration-standard.md`
 
 The upstream spec is the single source of truth for the full OIDC contract,
 including endpoint parameters, PKCE requirements, token format, back-channel
@@ -68,7 +68,7 @@ Arda requests the `arda:subscription` scope. accounts.vxture.com populates the
 ```
 
 This claim is the authoritative source for entitlement. See
-[`design/entitlement.md`](entitlement.md) for the full claim schema and mapping.
+[`20-design/entitlement.md`](entitlement.md) for the full claim schema and mapping.
 
 ---
 
@@ -104,7 +104,7 @@ subdomains. This is a hard requirement of the standard for cross-subdomain apps.
 
 Tokens are stored exclusively on the server (Redis). The browser never receives
 or sees an access token or refresh token. This is the BFF pattern mandated by
-the standard for server-rendered web apps. See [`design/decisions.md`](decisions.md)
+the standard for server-rendered web apps. See [`20-design/decisions.md`](decisions.md)
 for rationale.
 
 ---

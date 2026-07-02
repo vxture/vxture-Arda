@@ -68,7 +68,7 @@
 | arda 是否建镜像表 | 否 | 否（两种方案都不建表，仅信任源不同） |
 | 枚举 | `Tier` 已对齐 ADR 五档（`free\|starter\|pro\|business\|enterprise`）；`ArdaState` 仍是 `free`（ADR 目标 `none`） | 五档 tier 已达标；`state` 的 `free→none` 待随平台 claim 契约变更一并改 |
 
-**行动项**：`ArdaState` 重命名不是 arda 单方面能定的 —— 需平台侧 claim 契约先定，避免两边语义再次漂移。见[平台对接要求](../workplan/vxture-platform-integration-requirements.md)。
+**行动项**：`ArdaState` 重命名不是 arda 单方面能定的 —— 需平台侧 claim 契约先定，避免两边语义再次漂移。见[平台对接要求](../60-workplan/vxture-platform-integration-requirements.md)。
 
 ### 4.3 平台指令通道（seed / wipe / invalidate）：schema 已备，执行链路未接
 
@@ -110,8 +110,8 @@
 | 文档 | 旧述 | 现状 | 处理 |
 |---|---|---|---|
 | `ADR-entitlement-and-workspace.md` §0 | "arda 目前没有数据层（Redis-only，无 Prisma/无 DB）" | 已有 Prisma 7 + Postgres（0001~0005） | **需更新** §0 前置说明 |
-| `implementation/repository.md` | "docker-compose = 两服务（arda-app + arda-redis）"；无 `prisma/`；列旧 IA 路由 | 三服务（+arda-db）；有 `prisma/`；新 IA | **需更新** |
-| `design/architecture.md` | 容器拓扑仅 app+redis；env 表无 `DATABASE_URL` | +arda-db；每栈 `DATABASE_URL` | **需更新** |
+| `30-implementation/repository.md` | "docker-compose = 两服务（arda-app + arda-redis）"；无 `prisma/`；列旧 IA 路由 | 三服务（+arda-db）；有 `prisma/`；新 IA | **需更新** |
+| `20-design/architecture.md` | 容器拓扑仅 app+redis；env 表无 `DATABASE_URL` | +arda-db；每栈 `DATABASE_URL` | **需更新** |
 | `docker-compose.yml` 顶部注释 | "arda-app + arda-redis ONLY" | 含 arda-db | 注释需修 |
 
 ---

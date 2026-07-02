@@ -72,7 +72,7 @@ claim carried in the access token issued by accounts.vxture.com.
 | `enterprise` | 3 | Enterprise contracts |
 
 Higher rank entitles the user to all features of lower tiers. The entitlement
-model is documented in [`design/entitlement.md`](../design/entitlement.md).
+model is documented in [`20-design/entitlement.md`](../20-design/entitlement.md).
 
 ---
 

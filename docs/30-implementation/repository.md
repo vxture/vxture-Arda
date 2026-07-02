@@ -47,12 +47,12 @@ Data-Arda/
 |       `-- 60-reset-runtime-services.sh
 |-- docs/
 |   |-- agent.md                  # AI entry point (this repo's master doc index)
-|   |-- specs/
-|   |-- design/
-|   |-- implementation/
-|   |-- deployment/
-|   |-- operations/
-|   `-- memory/
+|   |-- 10-specs/
+|   |-- 20-design/
+|   |-- 30-implementation/
+|   |-- 40-deployment/
+|   |-- 50-operations/
+|   `-- 90-memory/
 |-- portals/                      # npm workspace root (Node.js 22+)
 |   |-- package.json              # Workspace: app, packages/shared
 |   |-- package-lock.json

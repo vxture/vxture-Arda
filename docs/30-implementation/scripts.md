@@ -131,5 +131,5 @@ These run in CI as part of `quality-gate`. They can also be run locally.
 | `promote.yml` | Manual (`gh workflow run`) | Validated fast-forward develop -> main |
 | `build.yml` | Called by release.yml | Build and push `arda-app` image to GHCR + Aliyun ACR |
 
-See [`operations/github-actions.md`](../operations/github-actions.md) for full
+See [`50-operations/github-actions.md`](../50-operations/github-actions.md) for full
 CI/CD design and the promotion contract.

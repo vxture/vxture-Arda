@@ -19,7 +19,7 @@ co-located on the same host with `always` restart policy and AOF persistence.
 
 **Consequence:** The cookie must be `HttpOnly` and `Secure`. The cookie domain
 is host-only (no leading dot) so it cannot propagate to sibling `*.vxture.com`
-subdomains. See `specs/security.md` for the full cookie spec.
+subdomains. See `10-specs/security.md` for the full cookie spec.
 
 ---
 

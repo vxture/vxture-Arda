@@ -1,7 +1,7 @@
 # arda 对 vxture 平台端的对接要求（v1）
 
 > 状态：对接需求（交付给 vxture 平台团队）
-> 上游依据：`docs/ADR-entitlement-and-workspace.md`、`docs/design/identity-app-integration-standard.md`、`docs/design/entitlement.md`、`docs/design/domain-entities-and-feature-keys.md`
+> 上游依据：`docs/ADR-entitlement-and-workspace.md`、`docs/20-design/identity-app-integration-standard.md`、`docs/20-design/entitlement.md`、`docs/20-design/domain-entities-and-feature-keys.md`
 > 目的：把 arda「打通」所需平台侧提供的契约一次性讲清，逐项可被平台 implement / 确认。
 
 ---
@@ -123,7 +123,7 @@ ADR §3.1 定稿枚举：
 
 ### 3.3 features / quota 的归属（ADR §3.4）
 
-- **features 的「键」由 arda 定义**：命名空间 `arda.<group>.<capability>`（布尔），配额 `arda.quota.<name>`（数值）。完整目录见 `docs/design/domain-entities-and-feature-keys.md`，arda 会提供并维护一份权威键清单交平台配置。
+- **features 的「键」由 arda 定义**：命名空间 `arda.<group>.<capability>`（布尔），配额 `arda.quota.<name>`（数值）。完整目录见 `docs/20-design/domain-entities-and-feature-keys.md`，arda 会提供并维护一份权威键清单交平台配置。
 - **每档开放哪些键 + 配额数值由平台订阅配置下发**。arda **不硬编码「档位 → 功能」映射**（否则改套餐就要发版）。
 - 因此通道 B 必须**逐订阅返回当前生效的 features 列表与 quota 数值**，而不是只返回一个 tier 名让 arda 自己展开。
 

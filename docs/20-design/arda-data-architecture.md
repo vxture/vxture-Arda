@@ -18,7 +18,7 @@ arda 的持久层**只为领域业务数据存在**，不承载身份 / 订阅 /
 | 平台侧（vxture） | 订阅 / 权益 / 计费 / 授权、Org 与 workspace 生命周期 | vxture 平台，arda **不建表** |
 | 身份层（IdP） | 账号、`active_org` / `active_workspace` | accounts.vxture.com（OIDC claim） |
 
-两侧仅通过两个契约耦合：**`workspaceId` 隔离键** + **`(workspace, product=arda)` 订阅行**（订阅行在平台侧，见 [`entitlement.md`](entitlement.md) 与 [平台对接要求](../workplan/vxture-platform-integration-requirements.md)）。
+两侧仅通过两个契约耦合：**`workspaceId` 隔离键** + **`(workspace, product=arda)` 订阅行**（订阅行在平台侧，见 [`entitlement.md`](entitlement.md) 与 [平台对接要求](../60-workplan/vxture-platform-integration-requirements.md)）。
 
 > 净结论：引入持久层的真正驱动力是**领域数据**（而非权益）。权益走 token claim / 未来实时拉取，**arda 侧不落 Subscription 镜像表**（详见 §5）。
 

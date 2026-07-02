@@ -87,4 +87,4 @@
 ## 6. 与既有 workplan 的衔接
 
 - 本计划的"门控地基"= functional-domains §7 实施路线的落地视图；两者一致，本文按**板块交付**重新编排。
-- 平台侧依赖（权益端点/角色词表/指令通道）见 [`vxture-platform-integration-requirements.md`](../workplan/vxture-platform-integration-requirements.md)（`plat` 维度）。
+- 平台侧依赖（权益端点/角色词表/指令通道）见 [`vxture-platform-integration-requirements.md`](../60-workplan/vxture-platform-integration-requirements.md)（`plat` 维度）。
