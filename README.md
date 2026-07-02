@@ -18,10 +18,10 @@ surfaces are built out behind that shell over time.
   it delegates sign-in to the central accounts service and consumes the
   resulting session.
 - Subscription-tier gate. After authentication a pluggable resolver determines
-  the user's tier (`free` / `pro` / `team` / `enterprise`). The resolver is an
-  interface so the backing source can change without touching the gate.
+  the user's tier (`free` / `starter` / `pro` / `business` / `enterprise`). The
+  resolver is an interface so the backing source can change without touching the gate.
 - Configurable default landing. Once authenticated and gated, the user lands on
-  a configurable default page (default `/data-assets/overview`).
+  a configurable default page (default `/dashboard`).
 
 ---
 
@@ -30,7 +30,7 @@ surfaces are built out behind that shell over time.
 Two-host topology. The shared public edge terminates TLS with
 the wildcard `*.vxture.com` cert and reverse-proxies over tailscale to ARDA_DEPLOY_HOST,
 which is private compute (tailnet-only, no public IP) running `arda-app` +
-`arda-redis` only. There is no on-host TLS or nginx in this repo.
+`arda-redis` + `arda-db` only. There is no on-host TLS or nginx in this repo.
 
 ```
 Browser
@@ -45,9 +45,10 @@ arda-app (Next.js, published on APP_PUBLISH_PORT)
    |- /            -> Next.js pages
    |- /api/*       -> Next.js route handlers
    |- OIDC RP      -> accounts.vxture.com (sign-in / token exchange)
-   |- tier gate    -> pluggable subscription resolver (free/pro/team/enterprise)
+   |- tier gate    -> pluggable subscription resolver (free/starter/pro/business/enterprise)
    |- session / cache -> arda-redis
-   `- default landing -> /data-assets/overview (configurable)
+   |- domain data     -> arda-db (Postgres: catalog + governance)
+   `- default landing -> /dashboard (configurable)
 ```
 
 arda contributes its public vhost as source artifacts in `configs/edge/*.conf`;
@@ -106,8 +107,8 @@ Arda deploys to `ARDA_DEPLOY_HOST` (private compute, reached by its tailscale na
 same segment as the edge host). Two independent stacks live on that host: `/srv/md0/arda`
 (prod) and `/srv/md1/arda-beta` (beta). Each release builds the one owned image
 (`arda-app`) and deploys the stack matching the pushed branch (`develop` -> beta,
-`main` -> prod). The deploy starts `arda-app` + `arda-redis` and publishes the
-app on `APP_PUBLISH_PORT`; TLS and the public domain are handled by the public
+`main` -> prod). The deploy starts `arda-app` + `arda-redis` + `arda-db` and
+publishes the app on `APP_PUBLISH_PORT`; TLS and the public domain are handled by the public
 edge, which fronts the app with the wildcard `*.vxture.com` cert.
 
 ```bash

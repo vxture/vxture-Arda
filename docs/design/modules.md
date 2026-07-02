@@ -39,7 +39,7 @@ domain/business data in `arda-db`. The app holds no local persistent state.
 | `RP_SESSION_TTL` | | `2592000` | Session TTL in seconds (30 days) |
 | `RP_SESSION_COOKIE_NAME` | | `vx_rp_session` | Opaque session cookie name |
 | `RP_SESSION_COOKIE_DOMAIN` | Yes | | Exact host domain (no leading dot) |
-| `DEFAULT_LANDING` | | `/data-assets/overview` | Post-login default route |
+| `DEFAULT_LANDING` | | `/dashboard` | Post-login default route |
 | `MOCK_STATE` | | `subscribed` | Mock lifecycle state (dev/beta; see entitlement.md) |
 | `MOCK_TIER` | | `pro` | Mock tier (dev/beta; no effect when real claim present) |
 | `NEXT_PUBLIC_APP_ENV` | Yes | `prod` | Stack identity baked into browser bundle |

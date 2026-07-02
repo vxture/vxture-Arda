@@ -4,14 +4,14 @@ Authoritative working agreement for this repo. The goal is a clean, predictable
 branch and deploy flow with no direct human writes to protected branches.
 
 Arda is a single Next.js destination app: an OIDC relying party against
-accounts.vxture.com that gates users by subscription tier (free/pro/team/
-enterprise) and lands them on a configurable default page. It ships as one owned
-image (`arda-app`) into two environments (beta + prod).
+accounts.vxture.com that gates users by subscription tier (free/starter/pro/
+business/enterprise) and lands them on a configurable default page. It ships as
+one owned image (`arda-app`) into two environments (beta + prod).
 
 Topology is two-host. The shared vxture public edge (edge host) terminates TLS
 with the wildcard `*.vxture.com` cert and reverse-proxies over tailscale to
 ARDA_DEPLOY_HOST, which is private compute (tailnet-only, no public IP) running
-`arda-app` + `arda-redis` only. arda does NOT own the edge; it contributes the
+`arda-app` + `arda-redis` + `arda-db` only. arda does NOT own the edge; it contributes the
 vhost source artifacts in `configs/edge/*.conf`, which an operator installs into
 the vxture project repository. There is no on-host
 TLS or nginx in this repo - the app is published on ARDA_DEPLOY_HOST's tailnet

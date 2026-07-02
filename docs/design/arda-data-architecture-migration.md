@@ -59,7 +59,7 @@
 | 结果 | beta/prod 的真实 workspace **当前是空态** | 有数据可视 |
 | Schema 就位度 | `WorkspaceRef.seedStatus`、`SeedTemplate`/`TemplateVersion` 已建表 | 克隆执行逻辑待实现 |
 
-**行动项**：要让线上"看得见数据"，需二选一：(a) 手动给真实 `active_workspace` 灌一次 dev-seed 风格的数据；(b) 落地 ADR §4 的模板填充流程。(b) 是正确的长期路径。
+**行动项**：~~(a) 手动灌数据 / (b) 落地模板填充~~ **[已完成 (b)]** 模板填充流程已实现（`app/lib/seed-fill.ts` + `seed-manifest.ts`，首次进入按 `seedStatus` 克隆；`ARDA_SEED_AUTOFILL` 控制 beta/demo 自动填充）。运行时真实克隆待在 beta 实测。
 
 ### 4.2 权益（entitlement）：仍读 token claim，未接平台端点
 
@@ -68,9 +68,9 @@
 | 数据来源 | OIDC token 的 `arda` claim（`MockEntitlementResolver` 直通） | 平台只读端点：按 `(workspaceId, product=arda)` 实时拉取 |
 | 缓存 | 无（每次直读 claim） | Redis 短 TTL 缓存 + 平台 `invalidate` 失效通知（秒级生效） |
 | arda 是否建镜像表 | 否 | 否（两种方案都不建表，仅信任源不同） |
-| 枚举 | `Tier` 已对齐 ADR 五档（`free\|starter\|pro\|business\|enterprise`）；`ArdaState` 仍是 `free`（ADR 目标 `none`） | 五档 tier 已达标；`state` 的 `free→none` 待随平台 claim 契约变更一并改 |
+| 枚举 | `Tier` 已对齐 ADR 五档（`free\|starter\|pro\|business\|enterprise`）；`ArdaState` 已由 `free` 改为 `none`（平台侧同步迁移中，`claims.ts` 保留 `free→none` 归一垫片） | 已达标；平台确认只发 `none` 后移除归一垫片 |
 
-**行动项**：`ArdaState` 重命名不是 arda 单方面能定的 —— 需平台侧 claim 契约先定，避免两边语义再次漂移。见[平台对接要求](../workplan/vxture-platform-integration-requirements.md)。
+**行动项**：~~`ArdaState` 重命名待平台契约~~ **[已完成]** 平台侧同步迁移，arda `state` 已改 `none` 并加入站归一兼容（`entitlement/types.ts`、`auth/lib/claims.ts`）。见[平台对接要求](../workplan/vxture-platform-integration-requirements.md) §3.2。
 
 ### 4.3 平台指令通道（seed / wipe / invalidate）：schema 已备，执行链路未接
 
@@ -101,8 +101,8 @@
 3. **补恢复演练/流程**：备份已就位，但恢复（`pg_restore`）尚无固化脚本或运维手册步骤 —— 补一条 `ops.sh restore` 或 runbook 步骤，并做一次演练验证 dump 可恢复。
 4. **落地平台指令通道**：内部端点 + 服务间签名 + 幂等 + `AuditLog` 写入 + wipe 软删/延迟硬删。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
 5. **落地权益实时拉取**：接平台只读端点后切换 `EntitlementResolver`，加 Redis 缓存 + invalidate 消费。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
-6. **落地模板填充**：`SeedTemplate` 内容策展 + 首次进入检测 `seedStatus` + 克隆逻辑（先全量复制，重量模板可评估 copy-on-write）。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
-7. **`ArdaState` 枚举对齐**：待平台 claim 契约确认 `free`/`none` 语义后统一修改。落地方案见 [`arda-data-arch-workplan.md`](arda-data-arch-workplan.md)。
+6. ~~**落地模板填充**~~ **[已完成]** `seed-manifest.ts` + `seed-fill.ts`（首次进入 `seedStatus` 租约 + 事务克隆 + 审计）；`ARDA_SEED_AUTOFILL` 控制 beta/demo。运行时克隆待 beta 实测。
+7. ~~**`ArdaState` 枚举对齐**~~ **[已完成]** `free → none`，平台同步迁移，`claims.ts` 保留归一垫片（见 §4.2）。
 
 ---
 
@@ -138,3 +138,4 @@
 | 2026-06-30 | 首版：盘点 schema `0001`~`0005`，梳理三层文档结构（本文件 + `arda-data-architecture.md` + `arda-data-architecture-schema.md`），列出现状/目标差距与文档漂移 |
 | 2026-07-02 | P0/P1 收口：#1 Postgres 纳入备份（`pg_dump -Fc` + 校验）；#2 迁移失败收紧为阻断启动；#6 首批文档漂移修正（ADR §0 / repository.md / architecture.md / compose 注释 / entrypoint 注释），第二批漂移登记；新增 P2/P3 落地方案文档 `arda-data-arch-workplan.md` |
 | 2026-07-02 | #6 第二批文档漂移修正：agent.md / modules.md / operations.md / checklists.md / deployment.md / security.md 全部补齐 arda-db（模块、排障、核对项、env、数据面安全） |
+| 2026-07-02 | 收口同步：§4.1 模板填充 [已完成]（#62）、§4.2/§5 `ArdaState free->none` [已完成]（#63）；第三批漂移消除 —— `DEFAULT_LANDING` 全量从已删除的 `/data-assets/overview` 改为 `/dashboard`（compose 默认值、modules.md、product.md、domains.md 等，另 dev-login/`.env.local.example`/entitlement.md 在 #63）；tier 旧四档 `team` 全量改 ADR 五档（product.md / decisions.md / entitlement.md / README.md / CLAUDE.md）；README/CLAUDE 两服务描述补 arda-db |

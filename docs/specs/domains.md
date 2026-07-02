@@ -33,7 +33,7 @@ an operator installs on the edge host.
 | `/api/entitlement` | Route handler | Returns current entitlement for the session |
 | `/entitlement/*` | Next.js pages | Upgrade and tier-gate UI surfaces |
 | `/(app)/*` | Auth-gated routes | All capability surfaces (requires active session) |
-| `/data-assets/overview` | Default landing | Configurable via `DEFAULT_LANDING` in `.env` |
+| `/dashboard` | Default landing | Configurable via `DEFAULT_LANDING` in `.env` |
 
 ### Beta (`beta-arda.vxture.com`)
 

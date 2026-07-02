@@ -66,7 +66,7 @@ services:
       # Host-only cookie (no leading dot): scoped to this exact domain.
       RP_SESSION_COOKIE_DOMAIN: "${RP_SESSION_COOKIE_DOMAIN:-}"
       # -- App config --------------------------------------------------------
-      DEFAULT_LANDING: "${DEFAULT_LANDING:-/data-assets/overview}"
+      DEFAULT_LANDING: "${DEFAULT_LANDING:-/dashboard}"
       MOCK_STATE: "${MOCK_STATE:-subscribed}"
       MOCK_TIER: "${MOCK_TIER:-pro}"
     networks:

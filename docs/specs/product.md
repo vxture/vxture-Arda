@@ -28,13 +28,16 @@ session with an `active` subscription status.
 
 | Route prefix | Surface |
 |---|---|
-| `/data-assets/overview` | Data asset catalog and overview (default landing) |
-| `/integration` | Data integration configuration |
-| `/management` | Data management tools |
-| `/governance` | Data governance workflows |
-| `/services` | Platform service management |
+| `/dashboard` | Overview dashboard (default landing) |
+| `/catalog` | Data asset catalog (datasets) |
+| `/lineage` | Dataset-level lineage |
+| `/quality` | Data quality rules and results |
+| `/standards` | Data standards (code sets / data elements) |
+| `/security` | Governance: policies and classification |
+| `/service` | Data services (APIs) and keys |
+| `/etl` | Integration / ETL surface |
 
-The default post-login landing page is `/data-assets/overview` (configurable
+The default post-login landing page is `/dashboard` (configurable
 via `DEFAULT_LANDING` in `.env`).
 
 ---
@@ -67,9 +70,10 @@ claim carried in the access token issued by accounts.vxture.com.
 | Tier | Rank | Target users |
 |---|---|---|
 | `free` | 0 | Lapsed or direct-free users |
-| `pro` | 1 | Individual paid subscribers |
-| `team` | 2 | Team subscriptions |
-| `enterprise` | 3 | Enterprise contracts |
+| `starter` | 1 | Entry paid tier |
+| `pro` | 2 | Individual paid subscribers |
+| `business` | 3 | Team / business subscriptions |
+| `enterprise` | 4 | Enterprise contracts |
 
 Higher rank entitles the user to all features of lower tiers. The entitlement
 model is documented in [`design/entitlement.md`](../design/entitlement.md).

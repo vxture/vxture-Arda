@@ -132,8 +132,9 @@ exception is `http://localhost:3230` for local development.
 
 ## Subscription Tiers as a Closed Enum
 
-**Decision:** Subscription tiers are a fixed ordered enum: `free < pro < team <
-enterprise`. The `tierMeets(tier, min)` utility compares by rank index.
+**Decision:** Subscription tiers are a fixed ordered enum: `free < starter < pro
+< business < enterprise` (ADR five-tier). The `tierMeets(tier, min)` utility
+compares by rank index.
 
 **Rationale:** An open-ended tier system (arbitrary strings, bitmask
 capabilities) would require all feature checks to know about all capabilities.
