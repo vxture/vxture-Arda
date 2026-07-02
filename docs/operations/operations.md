@@ -18,14 +18,15 @@ cd /srv/md1/arda-beta
 bash deploy/ops.sh status
 ```
 
-Expected output: `arda-app` and `arda-redis` (or `arda-beta-app` and
-`arda-beta-redis`) both showing `Up (healthy)`.
+Expected output: `arda-app`, `arda-redis`, and `arda-db` (or the `arda-beta-*`
+equivalents) all showing `Up (healthy)`.
 
 ### View Logs
 
 ```bash
 bash deploy/ops.sh logs arda-app    # App logs (last 100 lines, follow)
 bash deploy/ops.sh logs arda-redis  # Redis logs
+bash deploy/ops.sh logs arda-db     # Postgres logs (incl. migrate deploy at start)
 ```
 
 Or directly with Docker:
@@ -33,7 +34,13 @@ Or directly with Docker:
 ```bash
 docker compose logs -f --tail=100 arda-app
 docker compose logs -f --tail=100 arda-redis
+docker compose logs -f --tail=100 arda-db
 ```
+
+> The app entrypoint runs `prisma migrate deploy` on start and a failure is
+> fatal (container exits, `restart: always` retries). If `arda-app` is
+> restart-looping, check its logs for a migrate error and `arda-db` logs for the
+> underlying cause.
 
 ### Restart Services
 
@@ -110,6 +117,59 @@ Redis runs with `appendonly yes`. Verify the AOF file is present:
 ```bash
 ls -lh $DATA_DIR/redis/
 # Expected: appendonly.aof
+```
+
+---
+
+## Postgres Operations
+
+### Check DB Connectivity / Health
+
+```bash
+docker compose exec arda-db pg_isready -U arda -d arda
+# Expected: ... accepting connections
+```
+
+### Check Applied Migrations
+
+```bash
+docker compose exec arda-db psql -U arda -d arda -c \
+  'SELECT migration_name, finished_at FROM _prisma_migrations ORDER BY finished_at;'
+# Expected: rows through 0005_service_fields (current v1 schema)
+```
+
+If `arda-app` is restart-looping on a migrate error, compare this list against
+`portals/app/prisma/migrations/` to see which migration is failing to apply.
+
+### Inspect Domain Data (workspace-scoped)
+
+```bash
+# Row counts per table for a workspace:
+docker compose exec arda-db psql -U arda -d arda -c \
+  "SELECT count(*) FROM \"Dataset\" WHERE \"workspaceId\" = '<ws-id>';"
+```
+
+### Backup / Restore
+
+```bash
+bash deploy/ops.sh backup   # includes a pg_dump -Fc of arda-db (postgres-<ts>.dump)
+
+# Restore a dump into a running db container (DESTRUCTIVE - overwrites):
+docker compose exec -T arda-db pg_restore -U arda -d arda --clean --if-exists \
+  < $BACKUP_DIR/postgres-<ts>.dump
+```
+
+> Restore is destructive and not yet wrapped in an `ops.sh` subcommand; verify
+> the target stack (prod vs beta) before running, and prefer restoring into a
+> scratch DB first to validate the dump.
+
+### Data Persistence
+
+Postgres data lives on the RAID array; verify the data dir is present:
+
+```bash
+ls -lh $DATA_DIR/postgres/
+# Expected: PG_VERSION, base/, pg_wal/, ...
 ```
 
 ---

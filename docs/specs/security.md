@@ -27,8 +27,8 @@ ARDA_DEPLOY_HOST  (private compute, tailnet-only, no public IP)
 
 ARDA_DEPLOY_HOST has no public IP. The only ingress path is from the shared
 public edge over tailscale. The host firewall must permit ingress on the
-tailscale interface only. `arda-redis` is container-internal and never published
-to any host port.
+tailscale interface only. `arda-redis` and `arda-db` are container-internal and
+never published to any host port.
 
 ---
 
@@ -108,6 +108,28 @@ All session state lives in the `arda-redis` container, isolated on `arda-net`.
 Prod and beta each run their own Redis instance. There is no shared Redis. The
 container name is `${PROJECT_NAME}-redis`, so `REDIS_URL` in `.env` resolves to
 the correct instance for each stack.
+
+---
+
+## Domain Data Store (arda-db)
+
+Domain/business data (catalog + governance, v1) lives in the `arda-db` Postgres
+container, isolated on `arda-net`. Security properties:
+
+- **Container-internal only.** `arda-db` publishes no host ports; it is reachable
+  only from `arda-net`. Credentials (`POSTGRES_USER`/`POSTGRES_PASSWORD`) and
+  `DATABASE_URL` live in the per-stack `.env` (git-ignored), never in source.
+- **Workspace isolation.** Every business row carries `workspaceId` (the
+  platform/IdP `active_workspace`) and every query is force-filtered by it in the
+  server-side data layer; client components never reach the DB directly. See
+  `design/arda-data-architecture.md`.
+- **No platform-owned data.** Subscription / billing / org lifecycle are NOT
+  stored here (platform is the source of truth); only a `WorkspaceRef` mirror is
+  kept as the isolation anchor.
+- **Sensitive connection configs** (`DataSource.connectionConfig`) are encrypted
+  at the application layer before being written as `Json`.
+- **Per-stack isolation.** Prod and beta run separate Postgres instances
+  (`${PROJECT_NAME}-db`) with separate data dirs; data never mixes across stacks.
 
 ---
 

@@ -108,7 +108,7 @@
 
 ## 6. 与既有文档的漂移（需修正）
 
-数据层是中途引入的，若干文档仍停留在"Redis-only / 两服务"旧态。§6 首批（下表）已修正：
+数据层是中途引入的，若干文档曾停留在"Redis-only / 两服务"旧态。两批均已修正（下列两表存档说明修了什么）。首批（核心拓扑）：
 
 | 文档 | 旧述 | 现状 | 处理 |
 |---|---|---|---|
@@ -118,16 +118,16 @@
 | `docker-compose.yml` 顶部注释 | "arda-app + arda-redis ONLY" | 含 arda-db | **[已修]** 三服务注释 |
 | `portals/app/docker-entrypoint.sh` 注释 | "no route depends on the DB yet" | 6 个 `data.ts` 已读 DB | **[已修]** 随 §2 收紧一并更新 |
 
-**仍待修（第二批，未在本轮处理）** —— 多为运维/模块文档只提 redis，未提 arda-db：
+**第二批（已修）** —— 运维/模块文档补齐 arda-db：
 
-| 文档 | 旧述 | 处理建议 |
+| 文档 | 旧述 | 处理 |
 |---|---|---|
-| `docs/agent.md` | 容器表只列 arda-app / arda-redis | 加 arda-db 行 |
-| `docs/design/modules.md` | 无 `arda-db` 模块小节；"None. The app is stateless" | 补 arda-db 模块 + DATABASE_URL |
-| `docs/operations/operations.md` | 健康检查/日志只提 arda-redis | 加 arda-db 排障（`pg_isready`、连接、迁移日志） |
-| `docs/deployment/checklists.md` | 部署后核对只列 app/redis | 加 arda-db healthy + 迁移成功核对项 |
-| `docs/deployment/deployment.md` | env 表无 `DATABASE_URL`；连通性只测 redis | 加 DATABASE_URL + pg 连通性 |
-| `docs/specs/security.md` | 只述 Redis key space | 加 arda-db 数据面安全（内部网、无发布端口、连接凭据） |
+| `docs/agent.md` | 容器表只列 arda-app / arda-redis | **[已修]** 加 arda-db 行 + 三容器网络说明 |
+| `docs/design/modules.md` | 无 `arda-db` 模块小节；"None. The app is stateless" | **[已修]** 补完整 arda-db 模块 + DATABASE_URL + arda-net 成员 |
+| `docs/operations/operations.md` | 健康检查/日志只提 arda-redis | **[已修]** 加 arda-db 日志 + Postgres Operations（连通性/迁移/查数/备份恢复） |
+| `docs/deployment/checklists.md` | 部署后核对只列 app/redis | **[已修]** 加 arda-db healthy + 迁移成功 + Postgres host-only 契约 |
+| `docs/deployment/deployment.md` | env 表无 `DATABASE_URL`；连通性只测 redis | **[已修]** 加 DATABASE_URL / POSTGRES_PASSWORD + pg 连通性 |
+| `docs/specs/security.md` | 只述 Redis key space | **[已修]** 加 Domain Data Store 安全段 + ingress 提及 arda-db |
 
 ---
 
@@ -137,3 +137,4 @@
 |---|---|
 | 2026-06-30 | 首版：盘点 schema `0001`~`0005`，梳理三层文档结构（本文件 + `arda-data-architecture.md` + `arda-data-architecture-schema.md`），列出现状/目标差距与文档漂移 |
 | 2026-07-02 | P0/P1 收口：#1 Postgres 纳入备份（`pg_dump -Fc` + 校验）；#2 迁移失败收紧为阻断启动；#6 首批文档漂移修正（ADR §0 / repository.md / architecture.md / compose 注释 / entrypoint 注释），第二批漂移登记；新增 P2/P3 落地方案文档 `arda-data-arch-workplan.md` |
+| 2026-07-02 | #6 第二批文档漂移修正：agent.md / modules.md / operations.md / checklists.md / deployment.md / security.md 全部补齐 arda-db（模块、排障、核对项、env、数据面安全） |

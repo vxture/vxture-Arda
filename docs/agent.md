@@ -37,10 +37,12 @@ Purpose:    Data capability portal shell - unified entry point for data work
 |---------|-----------|---------|
 | Arda App | `arda-app` | Next.js OIDC RP / app-BFF, subscription gate, all UI surfaces |
 | Redis | `arda-redis` | Server-side RP session store (authreq, tokens, sessions) |
+| Postgres | `arda-db` | Domain/business data store (catalog + governance, v1); workspace-isolated by `workspaceId`. NOT session state, NOT subscription |
 
-Both containers run on a single Docker bridge network (`arda-net`). The app
+All three containers run on a single Docker bridge network (`arda-net`). The app
 publishes on `APP_PUBLISH_PORT` to the host tailnet interface; the shared public
-edge reaches it there over tailscale.
+edge reaches it there over tailscale. Redis and Postgres are container-internal
+(no published ports).
 
 ---
 

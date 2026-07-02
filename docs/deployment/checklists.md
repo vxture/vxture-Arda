@@ -40,9 +40,11 @@ Run once per stack (prod and beta independently):
 
 After `bash deploy/deploy.sh all` completes:
 
-- [ ] `docker compose ps` shows `arda-app` and `arda-redis` as healthy
+- [ ] `docker compose ps` shows `arda-app`, `arda-redis`, and `arda-db` as healthy
 - [ ] `curl http://127.0.0.1:$APP_PUBLISH_PORT/api/health` returns `{"status":"ok"}`
 - [ ] `docker compose exec arda-redis redis-cli ping` returns `PONG`
+- [ ] `docker compose exec arda-db pg_isready -U arda -d arda` reports accepting connections
+- [ ] Migrations applied: `_prisma_migrations` has rows through `0005_service_fields` (app did not restart-loop on migrate)
 - [ ] `curl https://$APEX_DOMAIN/api/health` returns `{"status":"ok"}` (via edge)
 - [ ] OIDC login works: visit `https://$APEX_DOMAIN/auth/login` and complete flow
 - [ ] Session cookie is set with correct domain (no leading dot)
@@ -58,9 +60,10 @@ unsafe:
 | Contract | What to check |
 |---|---|
 | One owned image | Only `arda-app` is built and pushed; no other images in `build_images` |
-| Two stacks, no shared state | Prod and beta have separate `DATA_DIR`, separate Redis, separate `PROJECT_NAME` |
+| Two stacks, no shared state | Prod and beta have separate `DATA_DIR`, separate Redis, separate Postgres, separate `PROJECT_NAME` |
 | No cross-env `.env` | `/srv/md0/arda/etc/.env` has `PROJECT_NAME=arda`; `/srv/md1/arda-beta/etc/.env` has `PROJECT_NAME=arda-beta` |
 | Redis is host-only | `arda-redis` has no host-published ports; only reachable from `arda-net` |
+| Postgres is host-only | `arda-db` has no host-published ports; only reachable from `arda-net` |
 | Session cookie is host-only | `RP_SESSION_COOKIE_DOMAIN` has no leading dot |
 | `MOCK_AUTH` is unset in prod | `MOCK_AUTH` must not appear (or must be unset) in the prod `.env` |
 | Tailnet port is protected | `APP_PUBLISH_PORT` is bound only on the tailscale interface; not `0.0.0.0` |

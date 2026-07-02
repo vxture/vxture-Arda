@@ -115,6 +115,8 @@ cp .env.example /srv/md1/arda-beta/etc/.env  # beta
 | `OIDC_CLIENT_SECRET` | (provisioned) | (provisioned) |
 | `OIDC_REDIRECT_URI` | `https://arda.vxture.com/auth/callback` | `https://beta-arda.vxture.com/auth/callback` |
 | `REDIS_URL` | `redis://arda-redis:6379` | `redis://arda-beta-redis:6379` |
+| `DATABASE_URL` | `postgresql://arda:...@arda-db:5432/arda` | `postgresql://arda:...@arda-beta-db:5432/arda` |
+| `POSTGRES_PASSWORD` | (provisioned) | (provisioned) |
 | `RP_SESSION_COOKIE_DOMAIN` | `arda.vxture.com` | `beta-arda.vxture.com` |
 | `MOCK_STATE` | `subscribed` | `trial` |
 | `NEXT_PUBLIC_APP_ENV` | `prod` | `beta` |
@@ -154,6 +156,13 @@ curl http://127.0.0.1:$APP_PUBLISH_PORT/api/health
 # Redis connectivity
 docker compose exec arda-redis redis-cli ping
 # Expected: PONG
+
+# Postgres connectivity + migrations applied
+docker compose exec arda-db pg_isready -U arda -d arda
+# Expected: ... accepting connections
+docker compose exec arda-db psql -U arda -d arda -c \
+  'SELECT count(*) FROM _prisma_migrations;'
+# Expected: >= 5 (schema through 0005_service_fields)
 
 # Full deployment verification
 bash deploy/deploy.sh verify
