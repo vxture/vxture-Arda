@@ -1,7 +1,7 @@
 # 数据血缘 功能设计（arda-biz-434-lineage）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.3（`LineageEdge`）
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-230`](arda-data-230-governance.md)（`LineageEdge`）
 
 ---
 

@@ -2,7 +2,7 @@
 
 > 状态：功能层 · 功能设计（样板 · 待评审）
 > 范围：**数据质量功能的端到端贯通 + 实现**（不涉及导航 / 页面归组，那是看和组织层）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.3；门控：[`arda-functional-domains-and-entitlement.md`](arda-functional-domains-and-entitlement.md)
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-230`](arda-data-230-governance.md)；门控：[`arda-functional-domains-and-entitlement.md`](arda-functional-domains-and-entitlement.md)
 
 ---
 

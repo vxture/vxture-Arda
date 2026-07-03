@@ -1,7 +1,7 @@
 # 数据资产 板块详细设计（arda-biz-210-assets）
 
 > 状态：第 2 层 · 详细设计（待评审）· 板块 `assets`
-> 上游：[`biz-100`](arda-biz-100-architecture.md)（总体架构）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.1/§3、[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.1
+> 上游：[`biz-100`](arda-biz-100-architecture.md)（总体架构）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.1/§3、[`data-210`](arda-data-210-assets.md)
 > 跨切面（隔离/两轴门控/治理即信任/对外契约）见 `biz-100` §3，本文不重述
 
 ---

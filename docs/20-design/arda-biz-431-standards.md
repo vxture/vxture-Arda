@@ -1,7 +1,7 @@
 # 数据标准 功能设计（arda-biz-431-standards）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.3（`Standard`）
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-230`](arda-data-230-governance.md)（`Standard`）
 > 同族：[`biz-432 主数据`](arda-biz-432-master-data.md)（DAMA「参考与主数据」；`biz-100` §1.1「数据定义」对）
 
 ---

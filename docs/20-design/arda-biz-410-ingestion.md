@@ -1,7 +1,7 @@
 # 数据接入 功能设计（arda-biz-410-ingestion）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.2；门控：[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §3
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-220`](arda-data-220-integration.md)；门控：[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §3
 
 ---
 

@@ -1,7 +1,7 @@
 # 数据治理 板块详细设计（arda-biz-230-governance）
 
 > 状态：第 2 层 · 详细设计（待评审）· 板块 `governance`
-> 上游：[`biz-100`](arda-biz-100-architecture.md)、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.3/§3、[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.3
+> 上游：[`biz-100`](arda-biz-100-architecture.md)、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.3/§3、[`data-230`](arda-data-230-governance.md)
 > 跨切面见 `biz-100` §3；本板块是"治理即信任"（`biz-100` §3.3）的落点
 
 ---

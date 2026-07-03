@@ -1,7 +1,7 @@
 # 数据服务 功能设计（arda-biz-441-services）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.4；对外契约：[`arda-data-platform-agent-support.md`](arda-data-platform-agent-support.md)
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-240`](arda-data-240-services.md)；对外契约：[`arda-data-platform-agent-support.md`](arda-data-platform-agent-support.md)
 
 ---
 

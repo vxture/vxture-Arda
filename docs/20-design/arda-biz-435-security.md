@@ -1,7 +1,7 @@
 # 数据安全 功能设计（arda-biz-435-security）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.3（`Policy`）+ `Dataset.classification`
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-230`](arda-data-230-governance.md)（`Policy`）+ `Dataset.classification`
 
 ---
 

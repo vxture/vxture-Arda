@@ -1,7 +1,7 @@
 # 数据资产 功能设计（arda-biz-421-assets）
 
 > 状态：功能层 · 功能设计（待评审）
-> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.1
+> 模板/看板：[`biz-400`](arda-biz-400-functions.md)；数据模型：[`data-210`](arda-data-210-assets.md)
 > 与 [`biz-422 元数据`](arda-biz-422-metadata.md) 是**两个维度**：资产 = **对象/单元**（有哪些数据、归谁、多少）；元数据 = **描述**（数据长什么样、什么意思）。
 
 ---

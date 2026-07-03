@@ -1,8 +1,9 @@
-# arda 数据架构 · 迁移与现状（arda-data-architecture-migration）
+# arda 数据架构 · 迁移与实施（arda-data-300-migration）
 
 > 状态：实时跟踪（随每次迭代更新；这是"现在在哪、要去哪"的文件，不是稳定设计）
+> 层：第 3 层 · 迁移与实施（`data` 系列，见 [`data-000`](arda-data-000-index.md) 索引）
 > 范围：schema 迁移时间线、部署时的迁移执行方式、当前实现 vs 目标态的差距、文档漂移、演进路线
-> 顶层设计见 [`arda-data-architecture.md`](arda-data-architecture.md)；字段级详情见 [`arda-data-architecture-schema.md`](arda-data-architecture-schema.md)
+> 上游：总体设计见 [`data-100`](arda-data-100-architecture.md)；字段级详情见 `data-210..260`（板块 schema）、横切 `data-110`/`data-120`/`data-130`/`data-140`
 
 ---
 
@@ -17,8 +18,9 @@
 | `0003_standards` | 新增 `Standard` 表 |
 | `0004_quality_fields` | `QualityRule` 加 `code/name/dimension` + 唯一；`QualityResult` 加 `issues` |
 | `0005_service_fields` | `DataService` 加 `code/name/path/method/description/domain/level` + 唯一 |
+| `0006_multiagent_scope_ownerapp` | 新增枚举 `AssetScope{workspace,platform}`；`GlossaryTerm`/`Standard` 加 `scope`；`Dataset`/`DataService` 加 `ownerApp`；`DataService` 加 `visibility`；`ApiKey` 加 `consumerApp`；新增 `[workspaceId, ownerApp]` 索引（`Dataset`）。支撑多-agent 归属与共享，见 [`data-150`](arda-data-150-multiagent-sharing.md) |
 
-**当前 schema 版本：`0005_service_fields`**（v1，catalog-first）。
+**当前 schema 版本：`0006_multiagent_scope_ownerapp`**（v1，catalog-first）。
 
 ---
 
@@ -52,7 +54,7 @@
 
 | 项 | 现状 | 目标态（ADR §4） |
 |---|---|---|
-| 填充方式 | `prisma/seed.ts` + `npm run db:seed`，硬编码 `SEED_WORKSPACE_ID=dev-ws-001` | 平台建 workspace + 标记 `seedStatus` → arda 首次进入按 `SeedTemplate` 克隆进真实 `workspaceId` |
+| 填充方式 | `prisma/seed.ts` + `npm run db:seed`，硬编码 `SEED_WORKSPACE_ID=dev-ws-001` | 平台建 workspace + 标记 `seedStatus` -> arda 首次进入按 `SeedTemplate` 克隆进真实 `workspaceId` |
 | 是否在部署跑 | **否**（仅本地/CI 手动） | 由用户首次进入触发，非部署时机 |
 | 结果 | beta/prod 的真实 workspace **当前是空态** | 有数据可视 |
 | Schema 就位度 | `WorkspaceRef.seedStatus`、`SeedTemplate`/`TemplateVersion` 已建表 | 克隆执行逻辑待实现 |
@@ -66,7 +68,7 @@
 | 数据来源 | OIDC token 的 `arda` claim（`MockEntitlementResolver` 直通） | 平台只读端点：按 `(workspaceId, product=arda)` 实时拉取 |
 | 缓存 | 无（每次直读 claim） | Redis 短 TTL 缓存 + 平台 `invalidate` 失效通知（秒级生效） |
 | arda 是否建镜像表 | 否 | 否（两种方案都不建表，仅信任源不同） |
-| 枚举 | `Tier` 已对齐 ADR 五档（`free\|starter\|pro\|business\|enterprise`）；`ArdaState` 仍是 `free`（ADR 目标 `none`） | 五档 tier 已达标；`state` 的 `free→none` 待随平台 claim 契约变更一并改 |
+| 枚举 | `Tier` 已对齐 ADR 五档（`free\|starter\|pro\|business\|enterprise`）；`ArdaState` 仍是 `free`（ADR 目标 `none`） | 五档 tier 已达标；`state` 的 `free->none` 待随平台 claim 契约变更一并改 |
 
 **行动项**：`ArdaState` 重命名不是 arda 单方面能定的 —— 需平台侧 claim 契约先定，避免两边语义再次漂移。见[平台对接要求](../60-workplan/vxture-platform-integration-requirements.md)。
 
@@ -120,4 +122,5 @@
 
 | 日期 | 变更 |
 |---|---|
-| 2026-06-30 | 首版：盘点 schema `0001`~`0005`，梳理三层文档结构（本文件 + `arda-data-architecture.md` + `arda-data-architecture-schema.md`），列出现状/目标差距与文档漂移 |
+| 2026-06-30 | 首版：盘点 schema `0001`~`0005`，梳理三层文档结构，列出现状/目标差距与文档漂移 |
+| 2026-07-03 | 并入 `data` 编号系列，改名为 `data-300`（原 `arda-data-architecture-migration.md`） |

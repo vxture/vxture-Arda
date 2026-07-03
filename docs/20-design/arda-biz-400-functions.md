@@ -2,7 +2,7 @@
 
 > 状态：功能层 · 框架（随各功能设计更新）
 > 范围：从**功能视角**保证每个功能**贯通（端到端连得通）+ 实现（建得出来）**；**与"看和组织"（导航 / 九宫）解耦**
-> 上游：[`biz-100`](arda-biz-100-architecture.md)（能力 × 阶段矩阵）、[`arda-data-architecture.md`](arda-data-architecture.md)（数据模型 da）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md)（能力键）
+> 上游：[`biz-100`](arda-biz-100-architecture.md)（能力 × 阶段矩阵）、[`data-100`](arda-data-100-architecture.md)（数据模型 data）、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md)（能力键）
 > 下游：[`biz-300`](arda-biz-300-implementation.md)（实施计划消费本文 §3 断链看板）
 
 ---

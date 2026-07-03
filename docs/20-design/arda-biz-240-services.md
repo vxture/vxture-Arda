@@ -1,7 +1,7 @@
 # 数据服务 板块详细设计（arda-biz-240-services）
 
 > 状态：第 2 层 · 详细设计（待评审）· 板块 `services`
-> 上游：[`biz-100`](arda-biz-100-architecture.md)、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.4/§3、[`arda-data-architecture-schema.md`](arda-data-architecture-schema.md) §4.4、[`arda-data-platform-agent-support.md`](arda-data-platform-agent-support.md)（对外契约）
+> 上游：[`biz-100`](arda-biz-100-architecture.md)、[`domain-entities-and-feature-keys.md`](domain-entities-and-feature-keys.md) §2.4/§3、[`data-240`](arda-data-240-services.md)、[`arda-data-platform-agent-support.md`](arda-data-platform-agent-support.md)（对外契约）
 > 跨切面见 `biz-100` §3
 
 ---

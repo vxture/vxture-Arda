@@ -23,7 +23,7 @@
 
 | 维度 | 代码 | 说明 | 现有文档（后续可平移改名） |
 |---|---|---|---|
-| 数据架构 | `arch` | 持久层 / schema / 迁移（**已完成**） | `arda-data-architecture{,-schema,-migration}.md` |
+| 数据架构 | `data` | 持久层 / schema / 迁移 | [`arda-data-000-index`](arda-data-000-index.md) 系列（`data-100/11x/2xx/300`） |
 | **业务架构** | `biz` | 能力全景 / 板块详细 / 实施（**本系列**） | 新建 |
 | 权益门控 | `ent` | 订阅 / feature-key / 两轴门控 | `ADR-11`、`entitlement.md`、`arda-functional-domains-and-entitlement.md` |
 | 对接 | `plat` | 平台 / IdP 契约 | `vxture-platform-integration-requirements.md`、`identity-app-integration-standard.md` |

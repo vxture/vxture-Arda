@@ -2,7 +2,7 @@
 
 > 状态：第 3 层 · 实施计划（待评审）
 > 范围：把 `biz-100`/`biz-2xx` 的目标态**从现状落地**的分阶段路线、依赖、迁移与风险
-> 上游：本系列 `biz-100`/`biz-2xx`/`biz-4xx`；现状证据 [`arda-functional-domains-and-entitlement.md`](arda-functional-domains-and-entitlement.md) §0、[`arda-data-architecture-migration.md`](arda-data-architecture-migration.md)
+> 上游：本系列 `biz-100`/`biz-2xx`/`biz-4xx`；现状证据 [`arda-functional-domains-and-entitlement.md`](arda-functional-domains-and-entitlement.md) §0、[`data-300`](arda-data-300-migration.md)
 
 ---
 
