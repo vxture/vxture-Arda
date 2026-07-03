@@ -8,7 +8,7 @@ surfaces are built out behind that shell over time.
 
 **Stack:** Next.js (`arda-app`) / Redis, behind the shared public edge
 
-**Repo:** `github.com/vxture/Data-Arda`
+**Repo:** `github.com/vxture/vxture-Arda`
 
 ---
 

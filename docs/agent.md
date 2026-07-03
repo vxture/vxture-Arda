@@ -9,7 +9,7 @@
 
 ```
 Name:       Vxture Arda
-Repo:       vxture/Data-Arda
+Repo:       vxture/vxture-Arda
 Deploy host: ARDA_DEPLOY_HOST (private compute, tailnet-only)
 User:       stone
 Purpose:    Data capability portal shell - unified entry point for data work
