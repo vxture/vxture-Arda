@@ -5,7 +5,13 @@
 > 关系：本章细化并升级 §3.2「权益挂载粒度」，从 (workspace, product) 升级为
 >       「workspace 下多 Subscription，每 Plan 含多 Product，能力就高合并 / 额度独立成池」
 > v2 变更：① Membership 下沉为 Org/Workspace 两级；② 取消基座/核心区分，Product 统一可独立订阅可分档；
->          ③ 附带基座 = free 来源、显示 standard，能力就高合并但不参与计费 → 无需差价抵扣。
+>          ③ 附带基座 = free 档能力来源、对外称 **bundled**（旧称 standard），能力就高合并但不参与计费 → 无需差价抵扣。
+>
+> **术语（bundled，旧 standard）**：workspace **没有单独订阅 arda**，但其订阅的某个 agent Plan **附带**了 arda 的数据底座能力——
+> arda 从**后台**为该 agent 提供数据支撑（DataService 取用），**不提供 arda 产品 UI**。
+> billing = `bundled_free`（0 元、不计费），**权益管理模式与单独订阅完全一致**（同 C2 capabilities/quota_pools、就高合并、瀑布扣减）。
+> tier 仍为五档 `free/starter/pro/business/enterprise`——bundled 不是第六档，是**接入来源标签**，合并时档位按 `free` 计。
+> **bundled 是独立可配的权益档**（非 free 硬别名）：当前取值与 free 基本一致，**但 `member.max = 0`**（后台 agent 模式无人类席位；free = 1），后续平台可单独调优。
 
 ---
 
@@ -20,7 +26,7 @@
 | state（生命周期） | 在 **Subscription** 层 | 整笔订阅 trial/subscribed/expired |
 | tier（档位） | 在 **Plan.component** 层 | 同一 Plan 内各 Product 可不同档 |
 | Product 模型 | **统一：不分基座/核心；均可被打包、可独立订阅、可分档、可合并** | data/kb 与 agent 同构，逻辑统一 |
-| 基座来源 | **附带 = free 来源（显示 standard）/ 单独订阅 = 计费（可更高档）** | 能力就高合并，计费按来源各算，无重叠 |
+| 基座来源 | **附带（bundled）= free 档能力来源、billing=bundled_free / 单独订阅 = 计费（可更高档）** | 能力就高合并，计费按来源各算，无重叠 |
 | 能力型权益(tier/上限/功能) | **就高合并：max tier / max 数值 / union features** | 同能力多来源取最强，不叠加 |
 | 消耗型权益(字数/调用包) | **不合并：按订阅独立成配额池** | 不同 Plan 的额度计费来源不同，各扣各的 |
 | 配额扣减 | **瀑布扣减（priority 升序，附带/赠送额度先扣）** | 平台内部路由，产品端无感，对账清晰 |
@@ -139,8 +145,8 @@ Plan {                 // 业务方案 = 多 Product 打包，每 Product 各自
   components: [
     {
       product_id       // 引用 Product
-      tier             // 显示档位：standard | starter | pro | business | enterprise
-      billing          // bundled_free（附带白送，0元）| charged（计费）
+      tier             // 五档：free | starter | pro | business | enterprise（附带基座 tier=free，其 bundled 性质由 billing 表达）
+      billing          // bundled_free（附带白送，0元；对外称 bundled）| charged（计费）
       features         // 该档开放的功能键（业务语言，客户能懂）
       quota: {         // 业务语言配额，非 token
         "doc.words": 1000000        // merge=pool → 独立成池
@@ -188,7 +194,7 @@ INPUT: W 下全部 active Subscription 的 components（含附带的 bundled_fre
     tier      = max(各 component.tier)        # 档位就高
     features  = union(各 component.features)   # 功能取并集
     上限配额   = max(各 component.quota[max型]) # storage.max/member.max 等就高
-  → 同一 product 多来源(附带 standard ×N + 单独订 pro)就高合并为最强档
+  → 同一 product 多来源(附带 bundled/free ×N + 单独订 pro)就高合并为最强档
   → 升级生效范围 = workspace 级（共享底座，升则全局升）
 
 ═══ 路 B：消耗型（merge = "pool"）═══
@@ -201,15 +207,15 @@ INPUT: W 下全部 active Subscription 的 components（含附带的 bundled_fre
 ═══ 计费正交（与能力合并解耦）═══
   billing = bundled_free 的 component → 价格 0，不进结算（附带白送）
   billing = charged     的 component → 正常计费
-  ∴ 「方案编写Plan(附带data:standard,free) + 单独订data:pro(charged)」：
-     能力合并 → data.tier = max(standard, pro) = pro（workspace 全局生效）
+  ∴ 「方案编写Plan(附带 data: bundled/free) + 单独订 data:pro(charged)」：
+     能力合并 → data.tier = max(free, pro) = pro（workspace 全局生效）
      计费     → 仅单独订的 pro 收费；附带那份恒 0
      → 无重叠、无差价抵扣
 
 OUTPUT (Entitlement 视图):
   {
     "data":           { tier:"pro", features:[...union...] },      // 就高(被单独pro覆盖)
-    "kb":             { tier:"standard", features:[...] },
+    "kb":             { tier:"free", features:[...] },              // 仅附带 bundled/free 来源
     "agent_writing":  { features:[...union...],
                         quota_pools:[                               // 额度独立
                           { metric:"doc.words", limit:500000,  remaining:.., priority:10 },

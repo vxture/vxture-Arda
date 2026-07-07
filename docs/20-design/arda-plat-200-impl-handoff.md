@@ -65,6 +65,7 @@ Header: x-vxture-internal-auth: {PLATFORM_INTERNAL_AUTH_TOKEN}
 - **失效触发**：收到 `subscription_changed` 事件后立即清除该 workspaceId 的缓存，
   下次请求强制重拉（无需等 TTL 到期）。
 - **降级策略**：平台请求失败时，返回上一次缓存值；无缓存时降级 `{tier:"free", status:"none"}`。
+- **接入来源无差别消费**：arda 对 C2 返回的权益**不区分 standalone 与 bundled 来源**——两者都走同一 `capabilities`/`quota_pools` 解析（`quota.ts`）。区别只在门控用途：产品 UI 门控要求 `status=active` 的单独订阅；agent 数据取用门控接受 bundled（`billing=bundled_free`、`tier=free`、`status=active`）。bundled 不是第六档 tier，tier 仍五档。详见 `biz-260` §0 与 `arda-data-platform-agent-support.md` §2②。
 
 ### 2.3 响应字段映射
 
