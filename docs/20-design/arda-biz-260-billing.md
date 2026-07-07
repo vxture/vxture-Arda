@@ -11,6 +11,19 @@
 
 ## 0. Design decisions
 
+- Tier is the original five: **free / starter / pro / business / enterprise** (unchanged).
+- **Access mode (source), orthogonal to tier** (per ADR-11 §11.3):
+  - **standalone** = the workspace subscribes to arda directly (any tier).
+    Grants both the arda product UI and data access.
+  - **bundled** (renamed from "standard") = the workspace has NO standalone arda
+    subscription, but an agent Plan it subscribes to bundles arda's data base
+    capability (`billing = bundled_free`, capability tier = `free`). arda serves
+    the agent's data access from the BACKEND only - **no arda product UI**. Same
+    entitlement management as standalone (C2 capabilities/quota_pools, just-high
+    merge, waterfall deduction); bundled is a source label, NOT a sixth tier.
+  - Enforcement split: product-UI gate requires standalone (active); data-access
+    gate (agent DataService consumption) accepts bundled OR standalone. See
+    `arda-data-platform-agent-support.md` §2②.
 - Seats = humans only. Agents (varda, external L1/L2) are not seats.
 - free / starter / pro = individual plans, member.max = 1.
 - business = team/org plan; member.max comes from the purchased plan.
@@ -186,6 +199,10 @@ For vxture platform team to configure before arda e2e test:
 - [ ] Register product "arda" in platform entitlement system
 - [ ] Configure capabilities map for each of the 5 tiers (section 3a)
 - [ ] Configure quota_pools for each tier with the 4 metrics (section 3b)
+- [ ] **Bundled base component**: for agent Plans that need arda data support,
+      add a `data` component `{ tier: free, billing: bundled_free }` so C2 returns
+      `status=active, tier=free` for that workspace (enables agent data access
+      without a standalone arda subscription; ADR-11 §11.3). Label = "bundled".
 - [x] storage.bytes reporting mode = gauge snapshot (RESOLVED, reply-01 R4); platform to ship `PUT /usage/gauge` (product_310 D5)
 - [ ] Confirm varda.credit -> token conversion rate
 - [ ] Set ARDA_PROVISION_WEBHOOK_SECRET and share with arda operator
