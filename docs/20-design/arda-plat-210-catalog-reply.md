@@ -1,6 +1,7 @@
 # arda 回函 02：对 product_220 的对账与增补提案（arda-plat-210-catalog-reply）
 
 > 版本：v1.0（2026-07-08）
+> 时间标记：**2607120135**（YYMMDDHHMM = 2026-07-12 01:35）
 > 方向：arda（线 B）→ vxture 平台团队
 > 对账对象：平台 `product_220_catalog-resource-model.md` v1.0（2026-07-08 定稿）
 > 配对：去程 `product_220` / 平台回函 `arda-handoff-reply-01.md`；arda 实施回传 `arda-plat-200-impl-handoff.md`

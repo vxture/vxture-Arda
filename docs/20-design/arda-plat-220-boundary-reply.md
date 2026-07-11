@@ -1,6 +1,7 @@
 # arda 回函 03：C1/C2/C3 路径边界与 S2S 内网化（arda-plat-220-boundary-reply）
 
 > 版本：v1.0（2026-07-10）
+> 时间标记：**2607120135**（YYMMDDHHMM = 2026-07-12 01:35）
 > 方向：arda（线 B）→ vxture 平台团队
 > 主题：登录授权之后的**内部通信路径边界**——C2/C3（S2S）不得走公网、入站 webhook 与内部端点的暴露面收口
 > 配对：`arda_200_interface v1.0`（三通道契约）、`arda_100_handoff` §2（"C2/C3 仅内网可达，公网 nginx 不路由 `/platform/*`"）、reply-01 §7.3（网络前置）
