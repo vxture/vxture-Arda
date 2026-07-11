@@ -89,13 +89,36 @@
 
 ## 4. 打通验收判据（product_200 §7 checklist）
 
-对照 handoff §3 验收口径：
+对照 handoff §3 验收口径。**e2e 实测于 2026-07-10 对已部署 beta 栈（`sha-01beaf1`）执行**（见 §4.1）：
 
-- [ ] **P3.1** C1 SSO e2e：登录 → 会话 → 登出 → back-channel logout 全链通
-- [ ] **P3.3 / P2.5** 全链 e2e：登录 → provisioning webhook 建 WorkspaceRef → C2 门控渲染正确档位 → `service.api.call` consume → `subscription_changed` 清缓存重拉
-- [ ] 数据面过检：`WorkspaceRef` / `ProvisioningEvent` / `UsageRaw` 表存在且带 `workspaceId` 隔离键
-- [ ] `GET /api/entitlement/quota` 返回正确 quota_pools 余量
-- [ ] `GET /.well-known/vxture-tools` 返回 `{"product":"arda","tools":[]}`
+- [x] **P3.1** C1 SSO：`/auth/session`→200 匿名；`/auth/login`→307 跳 IdP（PKCE S256 / client=arda-beta / scope / redirect 正确）；登录链路平台侧已确认打通。**登出 + back-channel 端点就位**（back-channel 全浏览器链路待人工过一遍）
+- [x] **左半链**：登录 → provisioning webhook 建 `WorkspaceRef`（§4.1 六用例全绿：processed/duplicate/stale/**beta-ignored**/subscription_changed/bad-sig；DB 核对通过）
+- [ ] **右半链**：C2 门控渲染正确档位 → `service.api.call` consume → `subscription_changed` 清缓存重拉 —— **阻塞于平台前置**（`PLATFORM_API_URL` 指公网 → `/platform/*` 404；需内网 auth-bff 地址 + 平台配 quota_pools + C3 无业务触发点）
+- [x] 数据面过检：`WorkspaceRef` / `ProvisioningEvent` / `UsageRaw` 表存在且带 `workspaceId` 隔离键（0007 迁移，e2e 中实证 WorkspaceRef/ProvisioningEvent 读写）
+- [ ] `GET /api/entitlement/quota` 返回正确 quota_pools 余量（依赖 C2 联通；当前 C2 404 → 兜底 `{tier:null,status:null}`，门控降级拒绝，属预期）
+- [x] `GET /.well-known/vxture-tools` 返回 `{"product":"arda","version":"v1","tools":[]}`（实测 200）
+
+### 4.1 provisioning webhook e2e 明细（2026-07-10，beta 栈实测）
+
+真实 HMAC 签名 webhook（`t=,v1=` over `"{t}.{raw}"`）打 `{beta}/provisioning/webhook`，逐用例 + DB 核对：
+
+| 用例 | 响应 | DB |
+|---|---|---|
+| `tenant.provisioned`（plan=arda-pro） | `200 processed` | `WorkspaceRef` 建成（plan=arda-pro, status=provisioned）|
+| 重复投递（同 `id`） | `200 duplicate` | 不重复处理 |
+| 旧 seq（seq=0 < 已存 seq=1） | `200 stale` | 不落库 |
+| **beta plan（plan=arda-beta-demo）** | `200 ignored` | **未建 `WorkspaceRef`**（懒建，本轮新功能验证成功）|
+| `subscription_changed`（seq=2） | `200 processed` | 事件落库 + 触发 `invalidateCache` |
+| 坏签名 | `400 invalid signature` | HMAC 验签生效 |
+
+`ProvisioningEvent` 实证 2 条（provisioned seq1 + subscription_changed seq2）；测试数据已清理。**验签(R1)/幂等/seq/beta 忽略/事件语义全部按 `arda_200_interface` §4.1 契约工作。**
+
+### 4.2 右半链解锁前置（平台侧 / owner）
+
+1. `PLATFORM_API_URL` → **内网 auth-bff 地址**（改 worker-02 两栈 `etc/.env` + 重启）；
+2. 平台配 arda 的 C2 `capabilities` + `quota_pools`（见 `biz-260` §7）；
+3. worker-02 ↔ auth-bff tailnet 连通探活；
+4. C3 consume 业务触发点接入（当前无 op 调 `recordUsage`）。
 
 ---
 
@@ -108,3 +131,5 @@
 | 2026-07-07 | arda 侧 C2/C3/P4 代码全线实施完成；owner 操作项已完成 5 项；剩余 O1-O3 待执行；更新验收 checklist；新增计费模型（biz-260）引用 |
 | 2026-07-07 | O1/O2 完成：worker-02 两库全量迁移（0001-0007 手动 psql）+ 容器重启（healthy）；新增 `plat-200-impl-handoff.md` 回传文档；O3 更新为含 `plat-200` 引用 |
 | 2026-07-07 | 平台回函 reply-01 裁定落地（§2b）：R1 verify.ts 多 v1+常数时间；R5 flush.ts 409 终态+invalidateCache；§6 移除 data.tier 回退；R2/R3 核实代码本已正确、勘误 impl-handoff v1.1；R4 storage=gauge 快照写入 biz-260/ent-120 |
+| 2026-07-10 | 对齐 `arda_200_interface v1.0`：Group 1 值域从 `@vxture/shared` 1.3.1 导入、C2 顶层 `subscription_status`(raw-5)；webhook 按 `arda-beta-` 前缀忽略 beta plan；全部上 prod（`01beaf1`）|
+| 2026-07-10 | **e2e 验收（§4/§4.1）**：左半链（C1 登录 + provisioning webhook 6 用例 + DB）对 beta 栈实测全绿；右半链（C2/consume/重拉）阻塞于平台前置（§4.2）|
