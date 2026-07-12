@@ -1,6 +1,6 @@
 # arda 实施回传 · 对 vxture 平台的交付状态说明（arda-plat-200-impl-handoff）
 
-> 版本：v1.2（2026-07-12，按平台回函 `arda_302_reply-02.md` §1 对账更正 §6 两处过时状态；v1.1 见 2026-07-07 按 `arda-handoff-reply-01.md` 勘误）
+> 版本：v1.3（2026-07-12，网络切换完成 + e2e 全链通过，详见 `arda-plat-300-tracking.md` §4/§4.3；v1.2 按平台回函 `arda_302_reply-02.md` §1 更正 §6 两处过时状态；v1.1 见 2026-07-07 按 `arda-handoff-reply-01.md` 勘误）
 > 时间标记：**2607120135**（YYMMDDHHMM = 2026-07-12 01:35，文件签发时间；内容含 2026-07-12 追加更正）
 > 面向：vxture 平台团队
 > 用途：告知平台 arda 在三通道（C1 OIDC / C2 权益 / C3 指令）及 L0 工具协议上的具体落地方式，
@@ -210,8 +210,8 @@ arda 使用独立 Postgres（`arda-db` / `arda-beta-db`），**不读平台库**
 | R5 counter 超额模式 | flush 侧已对齐（409 不重试+invalidateCache）；varda atomic 预扣待触发点 | **已配置**（counter/gauge metric_kind 随 2026-07-07/09 班车上产）|
 | DB migration 0001-0007 | **完成**（worker-02 两库手动 psql）| 无 |
 | `/.well-known/vxture-tools` | **完成**（v1 空实现）| 无 |
-| **[2026-07-12 更正]** 网络前置 | `PLATFORM_API_URL` 待切内网（`http://100.100.197.42:3090`，见 `arda_302_reply-02` §3.1）| **已解**：内网 base 已给，webhook 改 tailnet 投递已实施 |
-| e2e 全链验收 | R1/R2/R3 就绪；**只差 `PLATFORM_API_URL` 切内网 + 平台 reseed 运维窗口** | 网络前置已解（见上）|
+| **[2026-07-12 更正]** 网络前置 | `PLATFORM_API_URL` 已切内网（值见 worker-02 `etc/.env`，不入库；`arda_302_reply-02` §3.1）| **已解**：内网 base 已给，webhook 改 tailnet 投递已实施 |
+| **[2026-07-12 更正]** e2e 全链验收 | R1/R2/R3 就绪，`PLATFORM_API_URL` 已切内网 | ✅ **全链已通过**（真实样例 workspace 实测，详见 `arda-plat-300-tracking.md` §4/§4.3）|
 
 > **[2026-07-12 平台对账更正]**（`arda_302_reply-02` §1）：本表 2026-07-07 首版把 capability keys/quota_pools 标"待配置"、`PUT /usage/gauge` 标"待实施"——**均已过时**：目录配置早在 2026-07-07/09 上产，gauge 端点已于 2026-07-09（PR #711）独立专车上产。e2e 门票现状见下方替换行。
 
