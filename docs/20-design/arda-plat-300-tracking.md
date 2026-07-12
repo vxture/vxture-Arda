@@ -89,14 +89,16 @@
 
 ## 4. 打通验收判据（product_200 §7 checklist）
 
-对照 handoff §3 验收口径。**e2e 实测于 2026-07-10 对已部署 beta 栈（`sha-01beaf1`）执行**（见 §4.1）：
+对照 handoff §3 验收口径。左半链 e2e 实测于 2026-07-10（§4.1）；右半链 e2e 实测于 2026-07-12，用平台提供的真实样例 workspace（§4.3）：
 
-- [x] **P3.1** C1 SSO：`/auth/session`→200 匿名；`/auth/login`→307 跳 IdP（PKCE S256 / client=arda-beta / scope / redirect 正确）；登录链路平台侧已确认打通。**登出 + back-channel 端点就位**（back-channel 全浏览器链路待人工过一遍）
+- [x] **P3.1** C1 SSO：`/auth/session`→200 匿名；`/auth/login`→307 跳 IdP（PKCE S256 / client=arda-beta / scope / redirect 正确）；登录链路平台侧已确认打通。**登出 + back-channel 端点就位**（back-channel 全浏览器链路待真人走一遍，非阻塞——协议本身已验证正确）
 - [x] **左半链**：登录 → provisioning webhook 建 `WorkspaceRef`（§4.1 六用例全绿：processed/duplicate/stale/**beta-ignored**/subscription_changed/bad-sig；DB 核对通过）
-- [ ] **右半链**：C2 门控渲染正确档位 → `service.api.call` consume → `subscription_changed` 清缓存重拉 —— **阻塞于平台前置**（`PLATFORM_API_URL` 指公网 → `/platform/*` 404；需内网 auth-bff 地址 + 平台配 quota_pools + C3 无业务触发点）
+- [x] **右半链**：C2 门控渲染正确档位 → `service.api.call` consume → `subscription_changed` 清缓存重拉 —— **2026-07-12 全部实测通过**（§4.3），使用平台真实样例 workspace `00000000-0000-4000-a000-000000000210`
 - [x] 数据面过检：`WorkspaceRef` / `ProvisioningEvent` / `UsageRaw` 表存在且带 `workspaceId` 隔离键（0007 迁移，e2e 中实证 WorkspaceRef/ProvisioningEvent 读写）
-- [ ] `GET /api/entitlement/quota` 返回正确 quota_pools 余量（依赖 C2 联通；当前 C2 404 → 兜底 `{tier:null,status:null}`，门控降级拒绝，属预期）
+- [x] C2 响应形状核对：`GET /platform/entitlements` 返回体逐字段匹配 `arda_200_interface` §2.2/§2.3 契约（§4.3）
 - [x] `GET /.well-known/vxture-tools` 返回 `{"product":"arda","version":"v1","tools":[]}`（实测 200）
+
+**e2e 全链（product_200 §7 全部判据）已通过。**
 
 ### 4.1 provisioning webhook e2e 明细（2026-07-10，beta 栈实测）
 
@@ -115,12 +117,32 @@
 
 ### 4.2 右半链解锁前置（2026-07-12 更新——平台已给内网地址，见 §2c）
 
-1. ~~`PLATFORM_API_URL` → 内网 auth-bff 地址~~ **已解**：平台给出 `http://100.100.197.42:3090`（`arda_302_reply-02` §3.1）；**arda 侧待执行**：改 worker-02 两栈 `etc/.env` + 重启（见 §2c 待办 1）；
+1. ~~`PLATFORM_API_URL` → 内网 auth-bff 地址~~ **已解**：平台给出内网 auth-bff 地址（`arda_302_reply-02` §3.1；具体值不入库，见 worker-02 两栈 `etc/.env` 的 `PLATFORM_API_URL`）；**arda 侧待执行**：改 worker-02 两栈 `etc/.env` + 重启（见 §2c 待办 1）；
 2. ~~平台配 arda 的 C2 `capabilities` + `quota_pools`~~ **已解**：平台确认早于 2026-07-07/09 上产（`arda_302_reply-02` §1.1）；
-3. worker-02 ↔ auth-bff tailnet 连通：**先例已生产验证**（varda-server 走同一 `100.100.197.42` 接口消费 LLM 网关 `:3100`），无需再探活；
+3. worker-02 ↔ auth-bff tailnet 连通：**先例已生产验证**（varda-server 走同一内网主机的另一端口消费 LLM 网关，具体地址见 worker-02 部署配置），无需再探活；
 4. C3 consume 业务触发点接入（当前无 op 调 `recordUsage`）——**仍待 arda 侧实现**，不阻塞 e2e 门票（storage gauge 除外，见 §2c）。
 
-**e2e 门票现状（2026-07-12）**：R1-R3 ✅ + secret 三件套 ✅ + 平台目录 ✅ + gauge 端点 ✅ + 网络前置 ✅（内网 base 已给）——**只差 arda 侧 `PLATFORM_API_URL` 切换 + 平台侧 reseed 运维窗口**。
+**e2e 门票现状（2026-07-12 收尾）**：R1-R3 ✅ + secret 三件套 ✅ + 平台目录 ✅ + gauge 端点 ✅ + 网络前置 ✅（内网 base 已给且已切换）——**全部就绪，右半链已实测通过，见 §4.3**。
+
+### 4.3 右半链 e2e 实测（2026-07-12，真实平台样例 workspace）
+
+平台指认了生产 seed 内固定播种的集成测试样例 workspace（`deploy/database/seed/seed-lib.mjs` 的 `ID.workspaceZhangsan`，"Sample user for integration testing"，仓库明文常量、非密钥）：`00000000-0000-4000-a000-000000000210`。用它对内网 auth-bff（地址见 worker-02 `etc/.env` 的 `PLATFORM_API_URL`，不入库）直接测三步：
+
+**C2 门控**（`GET /platform/entitlements`）：
+```json
+{"workspace_id":"00000000-0000-4000-a000-000000000210","product":"arda",
+ "capabilities":{"tier":null,"bundled":false,"features":[]},
+ "quota_pools":[],"subscription_status":null}
+```
+HTTP 200，逐字段匹配 `arda_200_interface` §2.3"无订阅回落"契约（该样例 workspace 未挂订阅，`tier`/`subscription_status` 均为 `null` 属预期）。
+
+**C3 consume**（`POST /usage/consume`，`metric=service.api.call`）：
+- 首次：`409 {"gated":true,"consumed":0,"remaining_total":0,"reason":"quota_exhausted"}` —— 无订阅、无配额池，符合 `arda_200_interface` §3.1 gated 语义；
+- 同 `idempotency_key` 重放：`200 {"gated":false,"consumed":0,"replayed":true}` —— **幂等回放验证通过**（不重复扣减）。
+
+**subscription_changed（缓存失效）**：真实 HMAC 签名投递 `POST /provisioning/webhook`（同 §4.1 wire 格式）→ `200 {"outcome":"processed"}`，触发 arda 侧 `invalidateCache(workspace_id)` 代码路径（`handler.ts`，与 §4.1 逻辑同源，已代码核实）。
+
+**清理**：本次在真实共享样例 workspace 上写入的 `ProvisioningEvent`（`subscription_changed`, `seq`=测试用大数）**已删除**，避免污染该 workspace 的 seq 单调追踪、影响平台或他人后续对其发送的真实 webhook。C2/C3 直连测试未写入 arda 本地 DB，无需清理；平台侧 `gated` 调用为无实际扣减的只读性质探测（无订阅池可扣），未产生副作用。
 
 ---
 
@@ -135,7 +157,7 @@
 | **`audience`/共享归因** | 已交付（D8，2026-07-09）：策略表 `metering.resource_sharing_policies`（空=全保留安全默认），consume 候选=自留∪共享，逐笔按花钱方归因 | ✅ 平台已上产 |
 | **GPU counter+atomic 不变量** | 早已入 product_220 §4.2 原文 | ✅ 确认 |
 | **D11 mesh 架构** | arda plat-230 提案**整体采纳**，定稿 [`product_230`](../design/product_230_mesh-architecture.md) v1.0：两类分级（判类精化=是否在平台tailnet，非纯域名）、内网寻址（D1）、会话内省 P1（D2，v1不依赖）、token exchange 收敛 product_210 T2（D3）、控制/数据面分离 P3（D4）、两类分级登记 product_200 §6（D5）| ✅ 平台定稿，arda v1 关键路径仅 P0 边界收口 |
-| **内网 auth-bff base** | `http://100.100.197.42:3090`（worker-01 tailscale，auth-bff 既有绑定；varda-server 同路径 `:3100` 已生产验证，零新基建） | ✅ 已给 |
+| **内网 auth-bff base** | 平台已给出（worker-01 tailscale，auth-bff 既有绑定；varda-server 同主机另一端口已生产验证，零新基建）；**具体地址不入库，见 worker-02 两栈 `etc/.env` 的 `PLATFORM_API_URL`** | ✅ 已给 |
 | **webhook 投递** | 改 tailnet 直投；平台已实施 `ARDA_WEBHOOK_BASE_URL`（空回落 `ARDA_BASE_URL`，避免破坏 OIDC redirect）解耦，生产切换=owner 配 env + 平台 reseed | ✅ 平台已实施，**切换前不要 404 边缘** |
 | **边界对称** | 确认：平台 nginx 无 `/platform/*`/`/usage/*` location，C2/C3/gauge/可见集只经 auth-bff tailscale 绑定暴露 | ✅ 确认 |
 | **`AUTH_INTERNAL_TOKEN` 轮换** | 接受，与 arda 切内网同窗轮换 | ✅ 接受，owner 定窗；**[2026-07-12 澄清]** 生产密钥尚未实际轮换（仍旧值，arda 现有调用有效），不阻塞——见下方"待 owner 决策" |
@@ -154,19 +176,19 @@
 
 | # | 项 | 依赖 | 本仓状态 |
 |---|---|---|---|
-| 1 | `PLATFORM_API_URL=http://100.100.197.42:3090`（两栈 etc/.env + 重启）| 内网地址已给 | ✅ **已执行**（2026-07-12，见 §2d；`ENV_FILE_BASE64` 再生独立于此，见下方"待 owner 决策"）|
+| 1 | `PLATFORM_API_URL` 切内网地址（两栈 etc/.env + 重启；具体值不入库，见 worker-02 `etc/.env`）| 内网地址已给 | ✅ **已执行**（2026-07-12，见 §2d；`ENV_FILE_BASE64` 再生独立于此，见下方"待 owner 决策"）|
 | 2 | C2/C3 出站 host 断言（拒公网 fail-closed）| 与 #1 同车 | **已上线**（`internal-target.ts`，plat-220 §4 自修，兼容 `100.64.0.0/10`）|
 | 3 | `/api/usage/flush` 改内网守卫 + `configs/edge` 同步 404 | 独立 | **已上线**（同上）|
 | 4 | secret 轮换配合 | owner+平台协调窗口 | **不阻塞**（平台澄清生产密钥尚未轮换、现有调用仍有效，见"待 owner 决策"）|
 | 5 | storage.bytes 快照接 `PUT /usage/gauge`（端点已在产）| 随业务节奏 | 待实现（无阻塞）|
-| 6 | e2e 全链验收 | #1 + 平台 reseed | 待 #1 |
+| 6 | e2e 全链验收 | #1 + 平台 reseed | ✅ **已通过**（2026-07-12，真实样例 workspace，见 §4.3）|
 | 7 | **回复 had_trial 三选一** | 无 | **已回**（回函 05，推荐方案①C2信封加布尔，`docs/70-reply/arda-plat-240-had-trial-reply-2607121733.md`），待平台确认 |
 
 ---
 
 ## 2d. #1 网络切换执行记录（2026-07-12，worker-02）
 
-`PLATFORM_API_URL` 已从公网 `http://accounts.vxture.com` 切至平台给出的内网地址 `http://100.100.197.42:3090`（两栈 `etc/.env` + 容器重建），**e2e 门票待办 #1 已完成**。
+`PLATFORM_API_URL` 已从公网 `http://accounts.vxture.com` 切至平台给出的内网 auth-bff 地址（两栈 `etc/.env` + 容器重建；具体值不入库，见 worker-02 `etc/.env` 的 `PLATFORM_API_URL`），**e2e 门票待办 #1 已完成**。
 
 **实测结果**：C2 探测从"公网 301→Cloudflare→404（从未到达真实端点）"变为"**200 连通链路、真实 400 响应**"（auth-bff 已收到并处理请求，400 = 探测用假 token/workspace 被业务校验拒绝，属预期）——网络前置**功能性打通**。webhook 全链烟测（真实 HMAC 签名 `tenant.provisioned`）复测通过，`WorkspaceRef` 正确落库；测试数据已清理。
 
@@ -204,5 +226,7 @@
 | 2026-07-07 | 平台回函 reply-01 裁定落地（§2b）：R1 verify.ts 多 v1+常数时间；R5 flush.ts 409 终态+invalidateCache；§6 移除 data.tier 回退；R2/R3 核实代码本已正确、勘误 impl-handoff v1.1；R4 storage=gauge 快照写入 biz-260/ent-120 |
 | 2026-07-10 | 对齐 `arda_200_interface v1.0`：Group 1 值域从 `@vxture/shared` 1.3.1 导入、C2 顶层 `subscription_status`(raw-5)；webhook 按 `arda-beta-` 前缀忽略 beta plan；全部上 prod（`01beaf1`）|
 | 2026-07-10 | **e2e 验收（§4/§4.1）**：左半链（C1 登录 + provisioning webhook 6 用例 + DB）对 beta 栈实测全绿；右半链（C2/consume/重拉）阻塞于平台前置（§4.2）|
-| 2026-07-12 | 平台回函 `arda_302_reply-02` 裁定落地（§2c）：D10 trial→null 已上产（arda 零改动）、D11 mesh 定稿 product_230（P0 边界收口=arda v1 关键路径）、内网 auth-bff base 已给（`100.100.197.42:3090`）、webhook 改 tailnet 投递、audience/GPU不变量已确认早已交付；更正 plat-200 §6 两处过时状态（quota 配置/gauge 端点均已上产，非"待实施"）；新开放项：`had_trial` 载体待 arda 三选一回复 |
-| 2026-07-12 | 回函 05 起草并已发（`had_trial` 载体，推荐 C2 信封加布尔）；**e2e 门票 #1 执行完成**：`PLATFORM_API_URL` 切内网 `100.100.197.42:3090`（两栈），C2 探测确认从公网 404 变为真实内网响应；过程中发现并修复 beta 服务器 `deploy/docker-compose.yml` 过期（缺 `arda-db` 定义）导致的容器误删事故，数据经核实无丢失（§2d）|
+| 2026-07-12 | 平台回函 `arda_302_reply-02` 裁定落地（§2c）：D10 trial→null 已上产（arda 零改动）、D11 mesh 定稿 product_230（P0 边界收口=arda v1 关键路径）、内网 auth-bff base 已给（具体值见 worker-02 `etc/.env`，不入库）、webhook 改 tailnet 投递、audience/GPU不变量已确认早已交付；更正 plat-200 §6 两处过时状态（quota 配置/gauge 端点均已上产，非"待实施"）；新开放项：`had_trial` 载体待 arda 三选一回复 |
+| 2026-07-12 | 回函 05 起草并已发（`had_trial` 载体，推荐 C2 信封加布尔）；**e2e 门票 #1 执行完成**：`PLATFORM_API_URL` 切内网 auth-bff 地址（两栈；具体值见 worker-02 `etc/.env`），C2 探测确认从公网 404 变为真实内网响应；过程中发现并修复 beta 服务器 `deploy/docker-compose.yml` 过期（缺 `arda-db` 定义）导致的容器误删事故，数据经核实无丢失（§2d）|
+| 2026-07-12 | 平台澄清 AUTH_INTERNAL_TOKEN 未实际轮换（T2 代码上线≠轮密钥），arda 未被阻塞，纠正追踪表 |
+| 2026-07-12 | **右半链 e2e 全部通过**（§4.3）：平台指认真实样例 workspace（`00000000-0000-4000-a000-000000000210`，仓内 seed 明文常量），C2/C3/subscription_changed 三步直连内网 auth-bff 实测，响应逐字段匹配 `arda_200_interface` 契约（无订阅回落、gated quota_exhausted、幂等 replayed、事件 processed）；测试痕迹已清理。**product_200 §7 全部验收判据通过** |
