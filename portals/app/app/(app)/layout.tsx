@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Shell } from "../ui/shell";
 import { getSession } from "../auth/lib/session";
+import { isWorkspaceAdmin } from "../entitlement/roles";
 import { prisma } from "../lib/db";
 import { fillWorkspaceIfNeeded } from "../lib/seed-fill";
 
@@ -24,5 +25,8 @@ export default async function AppGroupLayout({ children }: { children: ReactNode
   if (session?.workspaceId) {
     await fillWorkspaceIfNeeded(prisma, session.workspaceId, session.tenantId);
   }
-  return <Shell>{children}</Shell>;
+  // Role axis for the chrome: hides role-locked nav/boards (admin). Screen
+  // content is enforced separately server-side (ScreenGate) - hiding is UX,
+  // not the security boundary.
+  return <Shell isAdmin={isWorkspaceAdmin(session?.roles)}>{children}</Shell>;
 }

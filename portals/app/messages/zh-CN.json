@@ -65,12 +65,15 @@
     "analyze": "数据分析域",
     "analyzeDesc": "血缘洞察与分析",
     "serve": "数据服务域",
-    "serveDesc": "API 服务供给与共享"
+    "serveDesc": "API 服务供给与共享",
+    "admin": "管理",
+    "adminDesc": "API 密钥与审计"
   },
   "navGroup": {
     "overview": "概览",
     "assets": "资产治理",
-    "sharing": "共享应用"
+    "sharing": "共享应用",
+    "admin": "管理"
   },
   "nav": {
     "dashboard": "数据总览",
@@ -80,7 +83,9 @@
     "lineage": "数据血缘",
     "security": "数据安全",
     "service": "数据服务",
-    "etl": "数据开发"
+    "etl": "数据开发",
+    "apikeys": "API 密钥",
+    "audit": "审计日志"
   },
   "user": {
     "menu": "用户菜单",
@@ -584,5 +589,55 @@
     "title": "「{feature}」是 {tier} 功能",
     "description": "升级工作区订阅即可解锁。升级在 vxture 控制台完成，不会自动跳转。",
     "cta": "升级订阅"
+  },
+  "accessDenied": {
+    "title": "需要管理员权限",
+    "description": "该区域仅限工作区所有者与管理员访问。请联系工作区管理员为你授予角色。"
+  },
+  "apikeys": {
+    "eyebrow": "管理",
+    "title": "API 密钥",
+    "description": "用于外部消费方调用数据服务的密钥。密钥仅存哈希；吊销即时生效并记入审计。",
+    "metrics": {
+      "total": "密钥总数",
+      "active": "生效中",
+      "revoked": "已吊销"
+    },
+    "col": {
+      "name": "密钥",
+      "service": "关联服务",
+      "scopes": "权限范围",
+      "lastUsed": "最后使用",
+      "status": "状态"
+    },
+    "status": {
+      "active": "生效中",
+      "revoked": "已吊销"
+    },
+    "neverUsed": "从未使用",
+    "revoke": "吊销",
+    "listTitle": "密钥列表",
+    "emptyTitle": "暂无 API 密钥",
+    "emptyDesc": "发布数据服务供外部消费时将在此签发密钥。"
+  },
+  "audit": {
+    "eyebrow": "管理",
+    "title": "审计日志",
+    "description": "工作区操作与平台指令记录，按时间倒序。留存期限随订阅套餐。",
+    "metrics": {
+      "total": "记录总数",
+      "platform": "平台指令",
+      "last24h": "近 24 小时"
+    },
+    "col": {
+      "time": "时间",
+      "actor": "操作者",
+      "action": "动作",
+      "target": "对象"
+    },
+    "listTitle": "记录",
+    "search": "按操作者 / 动作 / 对象筛选",
+    "emptyTitle": "暂无审计记录",
+    "emptyDesc": "敏感操作与平台指令都会记录在这里。"
   }
 }

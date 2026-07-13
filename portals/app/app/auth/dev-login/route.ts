@@ -71,7 +71,9 @@ export async function GET(request: NextRequest) {
     active_org_name: "Dev Org",
     active_workspace: "dev-ws-001",
     active_workspace_name: "Dev Workspace",
-    roles: ["member"],
+    // Override with ?roles=owner (comma-separated) to exercise the admin
+    // domain locally; default stays the least-privileged member.
+    roles: (p.get("roles") ?? "member").split(",").map((r) => r.trim()).filter(Boolean),
     user_type: "user",
     exp: farFuture,
     arda_claim: ardaClaim,
