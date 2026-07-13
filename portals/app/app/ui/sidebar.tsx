@@ -13,10 +13,12 @@ interface SidebarProps {
   onSelect: (route: string) => void;
   collapsed: boolean;
   onToggle: () => void;
+  /** Workspace admin (owner/admin role): shows role-locked nav groups. */
+  isAdmin?: boolean;
 }
 
 /** Grouped, collapsible left navigation with a compliance footer card. */
-export function Sidebar({ activeKey, onSelect, collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ activeKey, onSelect, collapsed, onToggle, isAdmin = false }: SidebarProps) {
   const tn = useTranslations("nav");
   const tg = useTranslations("navGroup");
   const tb = useTranslations("board");
@@ -51,7 +53,7 @@ export function Sidebar({ activeKey, onSelect, collapsed, onToggle }: SidebarPro
       </div>
 
       <nav className="side-nav" aria-label={ts("nav")}>
-        {NAV.map((group) => {
+        {NAV.filter((g) => !g.adminOnly || isAdmin).map((group) => {
           const isClosed = !!closed[group.key];
           return (
             <section key={group.key} className="nav-section">

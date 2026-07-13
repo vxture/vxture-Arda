@@ -65,12 +65,15 @@
     "analyze": "Analytics",
     "analyzeDesc": "Lineage & insights",
     "serve": "Data Services",
-    "serveDesc": "API supply & sharing"
+    "serveDesc": "API supply & sharing",
+    "admin": "Administration",
+    "adminDesc": "API keys & audit"
   },
   "navGroup": {
     "overview": "Overview",
     "assets": "Asset Governance",
-    "sharing": "Shared Apps"
+    "sharing": "Shared Apps",
+    "admin": "Administration"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -80,7 +83,9 @@
     "lineage": "Data Lineage",
     "security": "Data Security",
     "service": "Data Services",
-    "etl": "Data Development"
+    "etl": "Data Development",
+    "apikeys": "API Keys",
+    "audit": "Audit Log"
   },
   "user": {
     "menu": "User menu",
@@ -584,5 +589,55 @@
     "title": "{feature} is a {tier} feature",
     "description": "Upgrade your workspace subscription to unlock it. Upgrading happens in the vxture console; nothing redirects automatically.",
     "cta": "Upgrade subscription"
+  },
+  "accessDenied": {
+    "title": "Administrator access required",
+    "description": "This area is limited to workspace owners and admins. Ask a workspace admin to grant you the role."
+  },
+  "apikeys": {
+    "eyebrow": "Administration",
+    "title": "API Keys",
+    "description": "Keys that authenticate external consumers of your data services. Secrets are stored as hashes; revocation is immediate and audited.",
+    "metrics": {
+      "total": "Total keys",
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "col": {
+      "name": "Key",
+      "service": "Service",
+      "scopes": "Scopes",
+      "lastUsed": "Last used",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "neverUsed": "Never",
+    "revoke": "Revoke",
+    "listTitle": "Keys",
+    "emptyTitle": "No API keys yet",
+    "emptyDesc": "Keys are minted when you publish a data service for external consumption."
+  },
+  "audit": {
+    "eyebrow": "Administration",
+    "title": "Audit Log",
+    "description": "Workspace activity and platform commands, newest first. Retention follows your plan.",
+    "metrics": {
+      "total": "Total entries",
+      "platform": "Platform actions",
+      "last24h": "Last 24h"
+    },
+    "col": {
+      "time": "Time",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target"
+    },
+    "listTitle": "Entries",
+    "search": "Filter by actor / action / target",
+    "emptyTitle": "No audit entries yet",
+    "emptyDesc": "Sensitive operations and platform commands are recorded here."
   }
 }

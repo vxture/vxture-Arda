@@ -19,6 +19,9 @@ export interface NavGroup {
   /** i18n key under "navGroup". */
   key: string;
   items: NavItem[];
+  /** Role-locked group: hidden for non-admin members (roles are not
+   *  purchasable, so visible-but-locked does not apply - biz-250 §6). */
+  adminOnly?: boolean;
 }
 
 export const NAV: NavGroup[] = [
@@ -43,6 +46,14 @@ export const NAV: NavGroup[] = [
       { key: "etl", route: "/etl", icon: "flow-arrow" },
     ],
   },
+  {
+    key: "admin",
+    adminOnly: true,
+    items: [
+      { key: "apikeys", route: "/apikeys", icon: "lock-key" },
+      { key: "audit", route: "/audit", icon: "list-checks" },
+    ],
+  },
 ];
 
 export const NAV_FLAT: NavItem[] = NAV.flatMap((g) => g.items);
@@ -64,6 +75,7 @@ export const BOARDS: Board[] = [
   { id: "govern", icon: "shield-check", home: "standards", screens: ["standards", "quality", "security"] },
   { id: "analyze", icon: "chart-line-up", home: "lineage", screens: ["lineage"] },
   { id: "serve", icon: "broadcast", home: "service", screens: ["service"] },
+  { id: "admin", icon: "gear-six", home: "apikeys", screens: ["apikeys", "audit"] },
 ];
 
 export const ROUTE_BY_KEY: Record<string, string> = Object.fromEntries(

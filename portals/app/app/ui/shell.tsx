@@ -25,7 +25,7 @@ const NOTIFS: Array<{ icon: PIconName; tone: string; key: string; route: string 
  * footer. Header/sidebar are arda-local compositions over DS tokens; the footer
  * and notifications drawer are DS components.
  */
-export function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children, isAdmin = false }: { children: ReactNode; isAdmin?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const ts = useTranslations("shell");
@@ -76,6 +76,7 @@ export function Shell({ children }: { children: ReactNode }) {
             onToggleAssistant={() => setAssistantOpen((o) => !o)}
             assistantOpen={assistantOpen}
             brandPlan={subscription?.tier ?? undefined}
+            isAdmin={isAdmin}
           />
         </div>
       </header>
@@ -87,6 +88,7 @@ export function Shell({ children }: { children: ReactNode }) {
             onSelect={(route) => router.push(route)}
             collapsed={collapsed}
             onToggle={() => setCollapsed((c) => !c)}
+            isAdmin={isAdmin}
           />
         </aside>
         <main className="app-main">{children}</main>

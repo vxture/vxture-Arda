@@ -64,6 +64,8 @@ interface HeaderProps {
   assistantOpen?: boolean;
   /** Subscription plan key (free | starter | pro | business | enterprise). */
   brandPlan?: string;
+  /** Workspace admin (owner/admin role): shows role-locked boards (admin). */
+  isAdmin?: boolean;
 }
 
 export function Header({
@@ -73,6 +75,7 @@ export function Header({
   onToggleAssistant,
   assistantOpen,
   brandPlan,
+  isAdmin = false,
 }: HeaderProps) {
   const { theme, setTheme, density, setDensity } = useTheme();
   const { locale, setLocale } = useLocale();
@@ -85,7 +88,10 @@ export function Header({
   const tl = useTranslations("level");
   const [panel, setPanel] = useState<"launcher" | "user" | null>(null);
 
-  const activeBoard = BOARDS.find((b) => b.screens.includes(activeKey)) ?? BOARDS[0];
+  // Role-locked boards (admin) are hidden, not badge-locked: roles cannot be
+  // purchased, so the visible-but-locked pattern does not apply (biz-250 §6).
+  const boards = BOARDS.filter((b) => b.id !== "admin" || isAdmin);
+  const activeBoard = boards.find((b) => b.screens.includes(activeKey)) ?? boards[0];
   const toggle = (p: "launcher" | "user") => setPanel((cur) => (cur === p ? null : p));
   const planTag = brandPlan ? PLAN_TAGS[brandPlan] : undefined;
   const level = 5;
@@ -105,7 +111,7 @@ export function Header({
           {panel === "launcher" && (
             <div className="vxh-panel vxh-launcher-panel">
               <div className="vxh-board-list">
-                {BOARDS.map((b) => (
+                {boards.map((b) => (
                   <button
                     key={b.id}
                     className={"vxh-board" + (b.id === activeBoard.id ? " is-active" : "")}

@@ -16,4 +16,11 @@ export const SCREEN_FEATURES: Partial<Record<string, FeatureKey>> = {
   lineage: "arda.governance.lineage",
   security: "arda.governance.policies",
   service: "arda.services.publish_api",
+  apikeys: "arda.admin.api_keys",
+  audit: "arda.admin.audit_log",
 };
+
+/** Screens additionally gated by workspace role (owner/admin). Role-locked
+ *  screens are HIDDEN from the nav (roles are not purchasable) and the
+ *  server-side ScreenGate renders access-denied instead of content. */
+export const ADMIN_SCREENS: ReadonlySet<string> = new Set(["apikeys", "audit"]);
