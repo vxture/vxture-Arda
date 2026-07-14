@@ -431,7 +431,33 @@
       "downstream": "Downstream impact",
       "downstreamVal": "2 tables - 1 service - 1 app",
       "impact": "Impact assessment",
-      "impactVal": "A change affects 64 subscribers"
+      "impactVal": "A change affects 64 subscribers",
+      "subjectLabel": "Subject",
+      "impactDatasets": "Downstream datasets",
+      "impactServices": "Downstream services",
+      "impactNames": "Impacted",
+      "none": "None"
+    },
+    "truncated": "Graph truncated to 200 nodes - narrow the subject to see more.",
+    "emptyTitle": "No lineage yet",
+    "emptyDesc": "Sync a data source or record a dataset link to grow the graph.",
+    "link": {
+      "button": "Link datasets",
+      "title": "Record lineage link",
+      "desc": "Declare that one dataset feeds another. Links form a DAG - cycles are rejected.",
+      "upstream": "Upstream dataset",
+      "downstream": "Downstream dataset",
+      "transform": "Transform (optional)",
+      "cancel": "Cancel",
+      "submit": "Record",
+      "error": {
+        "unauthenticated": "Session expired - sign in again.",
+        "forbidden": "Recording lineage requires a workspace admin role.",
+        "tier": "Lineage requires a higher plan.",
+        "invalid": "Pick two different datasets.",
+        "cycle": "That link would create a cycle - lineage must stay acyclic.",
+        "duplicate": "This link already exists."
+      }
     }
   },
   "security": {
