@@ -220,3 +220,30 @@ union merge platform-side); biz-260 §1 capability-key handoff withdrawn
 retirement (identity plane carries zero commercial fields). Products
 degrade gracefully during transition by ignoring a still-delivered
 `capabilities` field.
+
+---
+
+## Workspace-Anchor Soft Delete (No Per-Row deletedAt)
+
+**Decision (2026-07-14, owner-delegated):** The wipe soft-delete mark lives
+on the WorkspaceRef anchor (`wipedAt`), not as a `deletedAt` column on the
+14 business tables. Access is cut at two chokepoints - the (app) layout and
+the external service gateway - and a sweep job physically deletes business
+rows RETENTION_DAYS (90, matching the platform's data_retention_until
+promise) after the mark. Re-provisioning within the window clears the mark
+with data intact (the ADR 5.1 recovery window). AuditLog rows and the
+anchor itself survive hard deletion for compliance and idempotency.
+
+**Rationale:** ADR 5.1's wipe unit is the whole workspace, so the mark
+belongs on the workspace anchor. Per-row deletedAt would add a fourth
+mandatory clause to the data-110 force-filter paradigm across every query
+of every table - each missed filter silently resurrects "deleted" data,
+which is a leak class waiting to happen. One indexed anchor lookup at the
+entry chokepoints cannot be missed by new queries. Row-level archival for
+retention policies is a separate future feature with its own modeling, not
+a wipe prerequisite.
+
+**Consequence:** Migration 0008 adds WorkspaceRef.wipedAt (+index). New
+business tables need NO soft-delete columns. Any future per-dataset archive
+feature must NOT reuse wipedAt semantics - it gates access to one
+workspace's everything, not one row.

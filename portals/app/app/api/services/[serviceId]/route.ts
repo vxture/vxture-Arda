@@ -41,6 +41,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ serviceId: 
     return NextResponse.json({ error: "key_not_valid_for_service" }, { status: 403 });
   }
 
+  // Wipe chokepoint (Lc-BL3): a wiped workspace serves nothing externally.
+  const { getWipeState } = await import("../../../lib/workspace-state");
+  const wipe = await getWipeState(key.workspaceId);
+  if (wipe.wiped) return NextResponse.json({ error: "workspace_wiped" }, { status: 410 });
+
   // Workspace scoping comes from the KEY, never from the caller.
   const service = await prisma.dataService.findFirst({
     where: { workspaceId: key.workspaceId, id: serviceId },

@@ -24,9 +24,9 @@
 | 编号 | 断链（环） | 现状 | 接通方案 | 依赖 |
 |---|---|---|---|---|
 | `Lc-BL1` | 过程：销毁/归档执行缺 | retention `Policy` 只是规则，无到期执行器 | 建到期扫描 + 归档/销毁执行 | — |
-| `Lc-BL2` | 过程：`wipe` 未实现 | 平台指令通道未接（`workplan §2`） | 内部端点 + 鉴权 + 幂等 + 软删/延迟硬删 | `plat`（平台） |
-| `Lc-BL3` | 过程：软删列缺 | schema 无 `deletedAt`，软删无处落 | **软删 schema 决策**（多表加 `deletedAt`） | da（迁移决策） |
-| `Lc-BL4` | 监管：生命周期审计未接 | `AuditLog.idempotencyKey` 已建、无写入 | 补写入点（幂等） | admin |
+| `Lc-BL2` | 过程：`wipe` 未实现 | ✅ **已接通（2026-07-14）**：软删 = `tenant.deprovisioned` 事件置 `WorkspaceRef.wipedAt`（既有 webhook 鉴权/幂等/seq 机制承载，审计 `workspace.wipe`）；硬删 = `sweepWipedWorkspaces`（内部端点 `/api/lifecycle/sweep`，`INTERNAL_JOB_TOKEN` 守卫）到期物理清理业务行、**保留 AuditLog 与锚点**（status=hard_deleted），审计 `workspace.hard_delete`；**复活窗口** = 保留期内 re-provision 清除标记、数据原封（ADR §5.1 挽回窗口，活库实测） | `plat`（平台） |
+| `Lc-BL3` | 过程：软删列缺 | ✅ **已定案并落地（2026-07-14，owner 授权 arda 定）**：~~多表加 `deletedAt`~~ 改为**workspace 级锚点软删**——`WorkspaceRef.wipedAt`（迁移 0008）。理由：ADR §5.1 的 wipe 单位本就是整 workspace；逐表 `deletedAt` 会给 data-110 的 force-filter 范式加第四条规则（14 表 × 全部查询面，漏滤即泄漏"已删"数据），锚点方案把判定收敛为**单点**（(app) layout + 对外网关两个 chokepoint）；保留期 90 天与 arda_303 §1.4 `data_retention_until` 承诺同源。逐行归档/留存（数据集级）留待真实需求，是另一功能不是 wipe 前置 | da（迁移决策） |
+| `Lc-BL4` | 监管：生命周期审计未接 | ✅ **已接通（2026-07-14）**：`workspace.wipe`（platform actor）与 `workspace.hard_delete`（含删除计数/保留期）落 `AuditLog`；事件幂等由既有 ProvisioningEvent 机制承载 | admin |
 
 > 关键 = `Lc-BL3`（软删 schema 决策）是 `Lc-BL1/BL2` 的前置：没有软删列，wipe 的"软删+延迟硬删"无处落。这是本功能唯一需要 schema 决策的点。
 

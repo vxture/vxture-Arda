@@ -82,7 +82,7 @@
 | provisioning webhook | **已实现（2026-07-07）**：`POST /provisioning/webhook`，HMAC-SHA256，4 事件（`tenant.provisioned/deprovisioned/subscription_changed/grant.invalidated`）|
 | 幂等键 | `ProvisioningEvent.id`（平台投递 UUID，非 `AuditLog`）|
 | usage consume | **已实现（2026-07-07）**：`UsageRaw` 缓冲 + `flushUsage()` → `POST /usage/consume`；4 个 metric |
-| seed / wipe | **未实现**：`WorkspaceRef` 表已建，`SeedTemplate/TemplateVersion` 已建，执行链路待实现 |
+| seed / wipe | seed = 首次进入填充已实现（`fillWorkspaceIfNeeded`）；**wipe 已实现（2026-07-14）**：`tenant.deprovisioned` -> `WorkspaceRef.wipedAt` 软删（迁移 0008）+ 90 天后 `/api/lifecycle/sweep` 硬删（保留 AuditLog/锚点），复活窗口 = re-provision 清标记 |
 | AuditLog 写入 | 尚无调用点（表已建）|
 
 ### 4.4 领域扩展：v1 之外的 `future` 实体
