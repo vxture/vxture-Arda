@@ -422,7 +422,7 @@ model TemplateVersion {
 |---|---|---|---|
 | `workspaceId` 来源 | 开发期 `dev-login` 注入 `active_workspace: "dev-ws-001"`；生产读 OIDC claim | 平台真实 `active_workspace` claim（未来或改实时端点，但仍以 `workspaceId` 为隔离键） | [`data-300`](arda-data-300-migration.md) §4.2 |
 | 真实 workspace 数据 | beta/prod 真实 `workspaceId` 当前空态（seed 硬编码 `dev-ws-001`，仅本地/CI 跑） | 平台标记 `WorkspaceRef.seedStatus` -> 首次进入按 `SeedTemplate` 克隆进真实 `workspaceId` | [`data-300`](arda-data-300-migration.md) §4.1 |
-| 按 `workspaceId` 的 wipe | 未实现 | 平台 `wipe` 指令按 `workspaceId` 软删 + 延迟硬删（幂等 + 审计） | [`data-300`](arda-data-300-migration.md) §4.3 |
+| 按 `workspaceId` 的 wipe | ✅ 已实现（2026-07-14，Lc-BL3 定案：workspace 级锚点软删 `WorkspaceRef.wipedAt`，非逐表 `deletedAt`——不给 force-filter 范式加第四条规则） | 平台 `wipe` 指令按 `workspaceId` 软删 + 延迟硬删（幂等 + 审计） | [`data-300`](arda-data-300-migration.md) §4.3 |
 | 写路径 scope 强制 | 目前读路径已全量 scope；写路径（create/update/delete）尚少，靠范式约定（§2.2）人工保证 | 可考虑收敛为统一的 workspace-scoped 数据访问封装，减少漏写 `workspaceId` 的面 | 本文件 §2.2（约定层，未强制到工具） |
 
 > 隔离键本身（`workspaceId = active_workspace`，普通列非 FK）是稳定契约，不随上述迁移变动；变动的只是 `workspaceId` 的**信任源**（claim vs 实时端点）与**数据填充路径**（seed vs 模板克隆）。

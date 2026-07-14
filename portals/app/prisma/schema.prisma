@@ -325,12 +325,18 @@ model WorkspaceRef {
   orgId      String
   tenantId   String? // from provisioning webhook payload
   plan       String? // arda plan code at last provisioning
-  status     String   @default("provisioned") // provisioned | deprovisioned
+  status     String   @default("provisioned") // provisioned | deprovisioned | hard_deleted
   seedStatus String? // platform marker: needs sample-data fill (ADR section 4)
+  // Soft-delete mark (Lc-BL3 ruling 2026-07-14): the wipe unit is the WHOLE
+  // workspace, so the mark lives here on the anchor - business tables carry no
+  // per-row deletedAt. Set on tenant.deprovisioned, CLEARED on re-provision
+  // (the ADR 5.1 recovery window); hard delete sweeps after RETENTION_DAYS.
+  wipedAt    DateTime?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([orgId])
+  @@index([wipedAt])
   @@index([status])
 }
 

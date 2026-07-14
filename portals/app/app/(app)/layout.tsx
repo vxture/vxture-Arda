@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { Shell } from "../ui/shell";
 import { getSession } from "../auth/lib/session";
 import { isWorkspaceAdmin } from "../entitlement/roles";
+import { getWipeState } from "../lib/workspace-state";
+import { WipedNotice } from "../lifecycle/wiped-notice";
 import { prisma } from "../lib/db";
 import { fillWorkspaceIfNeeded } from "../lib/seed-fill";
 
@@ -22,7 +24,18 @@ export const dynamic = "force-dynamic";
 // single indexed WorkspaceRef lookup per navigation.
 export default async function AppGroupLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
+
+  // Wipe chokepoint (Lc-BL3): a workspace carrying the soft-delete mark shows
+  // nothing - one anchor lookup replaces per-row deletedAt filters everywhere.
   if (session?.workspaceId) {
+    const wipe = await getWipeState(session.workspaceId);
+    if (wipe.wiped) {
+      return (
+        <Shell isAdmin={false}>
+          <WipedNotice retainedUntil={wipe.retainedUntil?.toISOString() ?? null} />
+        </Shell>
+      );
+    }
     await fillWorkspaceIfNeeded(prisma, session.workspaceId, session.tenantId);
   }
   // Role axis for the chrome: hides role-locked nav/boards (admin). Screen

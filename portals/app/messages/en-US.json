@@ -775,5 +775,10 @@
         "connect": "Connection failed"
       }
     }
+  },
+  "wiped": {
+    "title": "This workspace has been scheduled for deletion",
+    "description": "The platform has marked this workspace for removal. Its data is no longer accessible.",
+    "descriptionUntil": "The platform has marked this workspace for removal. Data is retained until {date}; re-activating the workspace on the platform before then restores access."
   }
 }

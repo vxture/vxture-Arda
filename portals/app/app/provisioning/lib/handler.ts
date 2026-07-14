@@ -84,13 +84,29 @@ export async function handleProvisioningEvent(
           tenantId: tenant_id,
           plan: plan ?? undefined,
           status: "provisioned",
+          // Re-provision within the retention window CANCELS the pending wipe
+          // (the ADR 5.1 recovery window) - the mark clears, data survives.
+          wipedAt: null,
         },
       });
     } else if (type === "tenant.deprovisioned") {
-      // Mark deprovisioned; do NOT delete - retain for audit.
+      // Soft delete (Lc-BL3): mark the ANCHOR, never delete rows here. The
+      // workspace's business data becomes inaccessible immediately (UI +
+      // gateway chokepoints) and is hard-deleted by the lifecycle sweep after
+      // RETENTION_DAYS (arda_303 1.4: 90d promise floor). Platform command ->
+      // audited as a platform actor.
       await tx.workspaceRef.updateMany({
         where: { id: workspace_id, status: "provisioned" },
-        data: { status: "deprovisioned" },
+        data: { status: "deprovisioned", wipedAt: new Date() },
+      });
+      await tx.auditLog.create({
+        data: {
+          workspaceId: workspace_id,
+          actor: "platform",
+          action: "workspace.wipe",
+          target: workspace_id,
+          metadata: { source: "tenant.deprovisioned", seq },
+        },
       });
     }
     // subscription_changed and grant.invalidated: no WorkspaceRef mutation needed.
