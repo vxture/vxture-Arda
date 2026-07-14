@@ -431,7 +431,33 @@
       "downstream": "下游影响",
       "downstreamVal": "2 表 · 1 服务 · 1 应用",
       "impact": "影响评估",
-      "impactVal": "变更将影响 64 个订阅方"
+      "impactVal": "变更将影响 64 个订阅方",
+      "subjectLabel": "当前主题",
+      "impactDatasets": "下游数据集",
+      "impactServices": "下游服务",
+      "impactNames": "受影响对象",
+      "none": "无"
+    },
+    "truncated": "图已截断至 200 个节点——缩小主题范围可查看更多。",
+    "emptyTitle": "暂无血缘",
+    "emptyDesc": "同步数据源或手动记录数据集链接后，血缘图将逐步生长。",
+    "link": {
+      "button": "记录血缘",
+      "title": "记录血缘链接",
+      "desc": "声明一个数据集供给另一个数据集。血缘必须是有向无环图——成环将被拒绝。",
+      "upstream": "上游数据集",
+      "downstream": "下游数据集",
+      "transform": "变换说明（可选）",
+      "cancel": "取消",
+      "submit": "记录",
+      "error": {
+        "unauthenticated": "会话已过期，请重新登录。",
+        "forbidden": "记录血缘需要工作区管理员角色。",
+        "tier": "血缘功能需要更高订阅档位。",
+        "invalid": "请选择两个不同的数据集。",
+        "cycle": "该链接会形成环——血缘必须保持无环。",
+        "duplicate": "该链接已存在。"
+      }
     }
   },
   "security": {
