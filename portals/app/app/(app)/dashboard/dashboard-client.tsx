@@ -5,40 +5,44 @@ import { Button, DataTable, StatusBadge, type DataTableColumn } from "@vxture/de
 import { useTranslations } from "@arda/shared/i18n";
 import { PIcon, type PIconName } from "../../ui/phosphor-icon";
 import { SectionHeading } from "../../ui/section-heading";
+import { PeriodSwitch, type PeriodKey } from "../../ui/period-switch";
 import { AreaChart, Donut, HBars, Ring } from "../../ui/charts";
 import { ALERTS, ASSET_GROWTH, DOMAINS, GROWTH_MONTHS, LEVEL_TONE, QUALITY_DIMS } from "./seed";
 import type { DashboardData, DashTopAsset } from "./data";
 
 type StatTone = "blue" | "green" | "amber";
 
-export function DashboardClient({ data }: { data: DashboardData }) {
+export function DashboardClient({
+  data,
+  periods,
+  rawParams,
+}: {
+  data: DashboardData;
+  periods: { main: PeriodKey; biz: PeriodKey; team: PeriodKey; ext: PeriodKey };
+  rawParams: { period?: string; bizPeriod?: string; teamPeriod?: string; extPeriod?: string };
+}) {
   const t = useTranslations("dashboard");
   const router = useRouter();
 
-  const metrics: Array<{ id: string; label: string; value: string; trend: string; tone: StatTone }> = [
-    { id: "assets", label: t("metrics.assets"), value: data.total.toLocaleString(), trend: t("metrics.assetsTrend"), tone: "blue" },
-    { id: "volume", label: t("metrics.volume"), value: data.volume, trend: t("metrics.volumeTrend"), tone: "blue" },
-    { id: "calls", label: t("metrics.calls"), value: "1.98M", trend: t("metrics.callsTrend"), tone: "green" },
+  const newInPeriod = (count: number) =>
+    periods.main === "all" ? null : t("metrics.newInPeriod", { count, period: t("period." + periods.main) });
+
+  const metrics: Array<{ id: string; label: string; value: string; trend: string | null; tone: StatTone }> = [
+    { id: "assets", label: t("metrics.assets"), value: data.datasetCount.toLocaleString(), trend: newInPeriod(data.datasetNewInPeriod), tone: "blue" },
+    { id: "capacity", label: t("metrics.capacity"), value: data.capacity, trend: periods.main === "all" ? null : t("metrics.capacityNew", { value: data.capacityNewInPeriod }), tone: "blue" },
+    { id: "services", label: t("metrics.services"), value: data.serviceCount.toLocaleString(), trend: newInPeriod(data.serviceNewInPeriod), tone: "green" },
     {
-      id: "compliance",
-      label: t("metrics.compliance"),
-      value: data.total ? data.compliance.toFixed(0) + "%" : "-",
-      trend: t("metrics.complianceTrend"),
-      tone: data.total && data.compliance < 95 ? "amber" : "blue",
+      id: "quality",
+      label: t("metrics.quality"),
+      value: data.qualityScore ? data.qualityScore.toFixed(0) + "%" : "-",
+      trend: periods.main === "all" || !data.qualityRunsInPeriod ? null : t("metrics.qualityRuns", { count: data.qualityRunsInPeriod }),
+      tone: data.qualityScore && data.qualityScore < 95 ? "amber" : "blue",
     },
   ];
 
-  const donut = data.domainDonut.map((d) => ({ label: t("domain." + d.key), value: d.value, color: d.color }));
-  const teamBars = data.teamBars.map((b) => ({ label: t("team." + b.key), value: b.value, color: b.color }));
-
-  const modules = data.modules;
-  const moduleLinks: Array<{ key: string; icon: PIconName; href: string; value: number; sub: string }> = [
-    { key: "sources", icon: "database", href: "/sources", value: modules.sourcesTotal, sub: t("module.sourcesSub", { connected: modules.sourcesConnected }) },
-    { key: "standards", icon: "ruler", href: "/standards", value: modules.standardsTotal, sub: t("module.standardsSub", { published: modules.standardsPublished }) },
-    { key: "lineage", icon: "tree-structure", href: "/lineage", value: modules.lineageEdges, sub: t("module.lineageSub") },
-    { key: "service", icon: "broadcast", href: "/service", value: modules.servicesTotal, sub: t("module.serviceSub", { running: modules.servicesRunning }) },
-    { key: "security", icon: "lock-key", href: "/security", value: modules.apiKeysActive, sub: t("module.securitySub") },
-  ];
+  const domainDonut = data.domainDonut.map((d) => ({ label: t("domain." + d.key), value: d.value, color: d.color }));
+  const businessDonut = data.businessContribution.map((d) => ({ label: t("domain." + d.key), value: d.value, color: d.color }));
+  const teamBars = data.teamContribution.map((b) => ({ label: t("team." + b.key), value: b.value, color: b.color }));
 
   const columns: DataTableColumn<DashTopAsset>[] = [
     {
@@ -69,176 +73,262 @@ export function DashboardClient({ data }: { data: DashboardData }) {
         icon="chart-bar"
         title={t("title")}
         description={t("description")}
-        action={
-          <>
-            <Button variant="secondary">
-              <PIcon name="calendar-blank" /> {t("range")}
-            </Button>
-            <Button variant="secondary" size="icon" aria-label={t("refresh")}>
-              <PIcon name="arrows-clockwise" />
-            </Button>
-            <Button>
-              <PIcon name="export" /> {t("export")}
-            </Button>
-          </>
-        }
+        action={<PeriodSwitch paramKey="period" value={periods.main} scope="main" rawParams={rawParams} />}
       />
 
-      {/* Section: core metrics */}
-      <div className="ov-section">
-        <SectionHeading icon="gauge" title={t("section.metricsTitle")} description={t("section.metricsSub")} />
-        <div className="stat-grid">
-          {metrics.map((m) => (
-            <div className={"stat-card stat-tone--" + m.tone} key={m.id}>
+      {/* 核心指标: no heading of its own - it reads as the page title's own
+          overall stats, so it's just the period switch (on the title) + the
+          4 stat cards, sitting directly under the title with no separate
+          section label. */}
+      <div className="stat-grid">
+        {metrics.map((m) => (
+          <div className={"stat-card stat-tone--" + m.tone} key={m.id}>
+            <div className="stat-card-top">
               <span className="stat-card-label">{m.label}</span>
-              <span className="stat-card-value">{m.value}</span>
-              <span className="stat-card-tags">
-                <em>{m.trend}</em>
-              </span>
+              {m.trend && (
+                <span className="stat-card-tags">
+                  <em>{m.trend}</em>
+                </span>
+              )}
             </div>
-          ))}
+            <span className="stat-card-value">{m.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* 2. 数据资产 */}
+      <div className="ov-section">
+        <SectionHeading
+          icon="stack"
+          title={t("section.assetsTitle")}
+          description={t("section.assetsSub")}
+          action={
+            <Button variant="link" onClick={() => router.push("/catalog")}>
+              {t("viewAll")}
+            </Button>
+          }
+        />
+        <div className="con-card">
+          <div className="con-card-hd">
+            <div>
+              <div className="con-card-heading">{t("growthTitle")}</div>
+              <div className="con-card-sub">{t("growthSub")}</div>
+            </div>
+            <span className="legend-inline">
+              <span className="li-dot" style={{ background: "var(--vx-color-primary)" }} />
+              {t("growthLegend")}
+            </span>
+          </div>
+          <AreaChart data={ASSET_GROWTH} id="dashGrow" height={150} />
+          <div className="chart-axis">
+            {GROWTH_MONTHS.map((m) => (
+              <span key={m}>{m}</span>
+            ))}
+          </div>
+        </div>
+        <div className="con-card no-pad">
+          <div className="con-card-hd pad">
+            <div>
+              <div className="con-card-heading">{t("topTitle")}</div>
+              <div className="con-card-sub">{t("topSub")}</div>
+            </div>
+          </div>
+          <DataTable columns={columns} rows={data.topAssets} rowKey={(a) => a.id} onRowClick={(a) => router.push("/catalog/" + a.id)} />
         </div>
       </div>
 
-      {/* Section: platform modules - the whole-platform view; each card links
-          out to its own page for full detail. */}
+      {/* 3. 数据服务 */}
       <div className="ov-section">
-        <SectionHeading icon="app-window" title={t("section.modulesTitle")} description={t("section.modulesSub")} />
+        <SectionHeading
+          icon="broadcast"
+          title={t("section.servicesTitle")}
+          description={t("section.servicesSub", { running: data.servicesRunning, total: data.serviceCount })}
+          action={
+            <Button variant="link" onClick={() => router.push("/service")}>
+              {t("viewAll")}
+            </Button>
+          }
+        />
         <div className="ov-link-grid">
-          {moduleLinks.map((m) => (
-            <button key={m.key} className="ov-link-card" onClick={() => router.push(m.href)}>
+          {data.servicesList.map((s) => (
+            <button key={s.id} className="ov-link-card" onClick={() => router.push("/service")}>
               <span className="ov-link-card-ico">
-                <PIcon name={m.icon} weight="fill" />
+                <PIcon name="broadcast" weight="fill" />
               </span>
               <span className="ov-link-card-body">
                 <span className="ov-link-card-top">
-                  <strong>{m.value.toLocaleString()}</strong>
+                  <strong>{s.name}</strong>
+                  <small>{s.status}</small>
                 </span>
-                <span>{t("module." + m.key)}</span>
-                <small>{m.sub}</small>
+                <span>{s.method}</span>
+                <small>{s.code}</small>
               </span>
             </button>
           ))}
+          {!data.servicesList.length && <div className="dim">{t("noData")}</div>}
         </div>
       </div>
 
-      {/* Section: asset insights - a real dashboard grid (widgets tiled in
-          rows, the Datadog/Grafana pattern), not one full-width block per
-          card. One heading for the theme; each widget keeps its own small
-          in-card label so nothing reads as mixed together. */}
+      {/* 4. 数据质量 */}
       <div className="ov-section">
-        <SectionHeading icon="chart-line-up" title={t("section.insightsTitle")} description={t("section.insightsSub")} />
-        <div className="dash-cols">
-          <div className="dash-main">
-            <div className="con-card">
-              <div className="con-card-hd">
-                <div>
-                  <div className="con-card-heading">{t("growthTitle")}</div>
-                  <div className="con-card-sub">{t("growthSub")}</div>
-                </div>
-                <span className="legend-inline">
-                  <span className="li-dot" style={{ background: "var(--vx-color-primary)" }} />
-                  {t("growthLegend")}
-                </span>
-              </div>
-              <AreaChart data={ASSET_GROWTH} id="dashGrow" height={150} />
-              <div className="chart-axis">
-                {GROWTH_MONTHS.map((m) => (
-                  <span key={m}>{m}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="con-card">
-              <div className="con-card-hd">
-                <div>
-                  <div className="con-card-heading">{t("teamsTitle")}</div>
-                  <div className="con-card-sub">{t("teamsSub")}</div>
-                </div>
-              </div>
-              {teamBars.length ? <HBars data={teamBars} /> : <div className="dim">{t("noData")}</div>}
-            </div>
-          </div>
-
-          <div className="dash-side">
-            <div className="con-card">
-              <div className="con-card-hd">
-                <div>
-                  <div className="con-card-heading">{t("domainTitle")}</div>
-                  <div className="con-card-sub">{t("domainSub", { count: donut.length })}</div>
-                </div>
-              </div>
-              {donut.length ? <Donut data={donut} caption={t("domainCaption")} /> : <div className="dim">{t("noData")}</div>}
-            </div>
-
-            <div className="con-card">
-              <div className="con-card-hd">
-                <div>
-                  <div className="con-card-heading">{t("qualityTitle")}</div>
-                  <div className="con-card-sub">{t("qualitySub")}</div>
-                </div>
-                {data.qualityScore > 0 && <StatusBadge tone="success">{t("qualityRating")}</StatusBadge>}
-              </div>
-              <div className="qm-body">
-                <Ring score={data.qualityScore} color="var(--vx-color-success-600)" size={104} />
-                <div className="qm-dims">
-                  {QUALITY_DIMS.map((q) => (
-                    <div className="qm-dim" key={q.key}>
-                      <span className="qm-dim-label">{t("dim." + q.key)}</span>
-                      <span className="qm-dim-track">
-                        <span style={{ width: q.score + "%" }} />
-                      </span>
-                      <span className="qm-dim-val">{q.score}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section: asset detail - ranked assets + open items, side by side. */}
-      <div className="ov-section">
-        <SectionHeading icon="list-checks" title={t("section.detailTitle")} description={t("section.detailSub")} />
-        <div className="dash-cols">
-          <div className="con-card no-pad">
-            <div className="con-card-hd pad">
-              <div>
-                <div className="con-card-heading">{t("topTitle")}</div>
-                <div className="con-card-sub">{t("topSub")}</div>
-              </div>
-              <Button variant="link" onClick={() => router.push("/catalog")}>
-                {t("topLink")}
-              </Button>
-            </div>
-            <DataTable columns={columns} rows={data.topAssets} rowKey={(a) => a.id} onRowClick={(a) => router.push("/catalog/" + a.id)} />
-          </div>
-
-          <div className="con-card">
-            <div className="con-card-hd">
-              <div>
-                <div className="con-card-heading">{t("alertsTitle")}</div>
-                <div className="con-card-sub">{t("alertsSub", { count: ALERTS.length })}</div>
-              </div>
-              <StatusBadge tone="danger">{t("alertsCount")}</StatusBadge>
-            </div>
-            <div className="alert-list">
-              {ALERTS.map((a) => (
-                <button key={a.key} className="alert-item" onClick={() => router.push(a.route)}>
-                  <span className="alert-ico" style={{ color: a.tone, background: `color-mix(in srgb, ${a.tone} 14%, transparent)` }}>
-                    <PIcon name={a.icon} weight="fill" />
+        <SectionHeading
+          icon="seal-check"
+          title={t("qualityTitle")}
+          description={t("qualitySub")}
+          action={data.qualityScore > 0 ? <StatusBadge tone="success">{t("qualityRating")}</StatusBadge> : undefined}
+        />
+        <div className="con-card">
+          <div className="qm-body">
+            <Ring score={data.qualityScore} color="var(--vx-color-success-600)" size={104} />
+            <div className="qm-dims">
+              {QUALITY_DIMS.map((q) => (
+                <div className="qm-dim" key={q.key}>
+                  <span className="qm-dim-label">{t("dim." + q.key)}</span>
+                  <span className="qm-dim-track">
+                    <span style={{ width: q.score + "%" }} />
                   </span>
-                  <span>
-                    <span className="alert-title">{t("alert." + a.key + "Title")}</span>
-                    <span className="alert-meta" style={{ display: "block" }}>
-                      {t("alert." + a.key + "Meta")}
-                    </span>
-                  </span>
-                  <PIcon className="alert-caret" name="caret-right" />
-                </button>
+                  <span className="qm-dim-val">{q.score}</span>
+                </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. 数据标准 */}
+      <div className="ov-section">
+        <SectionHeading
+          icon="ruler"
+          title={t("section.standardsTitle")}
+          description={t("section.standardsSub", { published: data.standardsPublished, total: data.standardsTotal })}
+          action={
+            <Button variant="link" onClick={() => router.push("/standards")}>
+              {t("viewAll")}
+            </Button>
+          }
+        />
+        <div className="ov-link-grid">
+          {data.standardsList.map((s) => (
+            <button key={s.id} className="ov-link-card" onClick={() => router.push("/standards")}>
+              <span className="ov-link-card-ico">
+                <PIcon name="ruler" weight="fill" />
+              </span>
+              <span className="ov-link-card-body">
+                <span className="ov-link-card-top">
+                  <strong>{s.name}</strong>
+                  <small>{s.status}</small>
+                </span>
+                <span>{s.type}</span>
+                <small>{s.code}</small>
+              </span>
+            </button>
+          ))}
+          {!data.standardsList.length && <div className="dim">{t("noData")}</div>}
+        </div>
+      </div>
+
+      {/* 6. 数据安全 */}
+      <div className="ov-section">
+        <SectionHeading
+          icon="lock-key"
+          title={t("section.securityTitle")}
+          description={t("section.securitySub")}
+          action={
+            <Button variant="link" onClick={() => router.push("/security")}>
+              {t("viewAll")}
+            </Button>
+          }
+        />
+        <div className="stat-grid">
+          <div className="stat-card stat-tone--blue">
+            <span className="stat-card-label">{t("section.securityApiKeys")}</span>
+            <span className="stat-card-value">{data.apiKeysActive.toLocaleString()}</span>
+          </div>
+          <div className="stat-card stat-tone--blue">
+            <span className="stat-card-label">{t("section.securityPolicies")}</span>
+            <span className="stat-card-value">{data.policiesEnabled.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 7. 数据汇集 */}
+      <div className="ov-section">
+        <SectionHeading icon="flow-arrow" title={t("section.aggTitle")} description={t("section.aggSub")} />
+
+        <div className="con-card">
+          <div className="con-card-hd">
+            <div>
+              <div className="con-card-heading">{t("section.aggBusiness")}</div>
+              <div className="con-card-sub">{t("section.aggBusinessSub")}</div>
+            </div>
+            <PeriodSwitch paramKey="bizPeriod" value={periods.biz} scope="sub" rawParams={rawParams} />
+          </div>
+          {businessDonut.length ? <Donut data={businessDonut} caption={t("domainCaption")} /> : <div className="dim">{t("noData")}</div>}
+        </div>
+
+        <div className="con-card">
+          <div className="con-card-hd">
+            <div>
+              <div className="con-card-heading">{t("section.aggTeam")}</div>
+              <div className="con-card-sub">{t("section.aggTeamSub")}</div>
+            </div>
+            <PeriodSwitch paramKey="teamPeriod" value={periods.team} scope="sub" rawParams={rawParams} />
+          </div>
+          {teamBars.length ? <HBars data={teamBars} /> : <div className="dim">{t("noData")}</div>}
+        </div>
+
+        <div className="con-card">
+          <div className="con-card-hd">
+            <div>
+              <div className="con-card-heading">{t("section.aggExternal")}</div>
+              <div className="con-card-sub">{t("section.aggExternalSub", { connected: data.sourcesConnected, total: data.sourcesTotal })}</div>
+            </div>
+            <PeriodSwitch paramKey="extPeriod" value={periods.ext} scope="sub" rawParams={rawParams} />
+          </div>
+          <div className="ov-link-grid">
+            {data.sourcesList.map((s) => (
+              <button key={s.id} className="ov-link-card" onClick={() => router.push("/sources")}>
+                <span className="ov-link-card-ico">
+                  <PIcon name="database" weight="fill" />
+                </span>
+                <span className="ov-link-card-body">
+                  <span className="ov-link-card-top">
+                    <strong>{s.name}</strong>
+                    <small>{s.status}</small>
+                  </span>
+                  <span>{s.type}</span>
+                </span>
+              </button>
+            ))}
+            {!data.sourcesList.length && <div className="dim">{t("noData")}</div>}
+          </div>
+        </div>
+      </div>
+
+      {/* 8. 风险告警 */}
+      <div className="ov-section">
+        <SectionHeading
+          icon="warning"
+          title={t("alertsTitle")}
+          description={t("alertsSub", { count: ALERTS.length })}
+          action={<StatusBadge tone="danger">{t("alertsCount")}</StatusBadge>}
+        />
+        <div className="con-card">
+          <div className="alert-list">
+            {ALERTS.map((a) => (
+              <button key={a.key} className="alert-item" onClick={() => router.push(a.route)}>
+                <span className="alert-ico" style={{ color: a.tone, background: `color-mix(in srgb, ${a.tone} 14%, transparent)` }}>
+                  <PIcon name={a.icon} weight="fill" />
+                </span>
+                <span>
+                  <span className="alert-title">{t("alert." + a.key + "Title")}</span>
+                  <span className="alert-meta" style={{ display: "block" }}>
+                    {t("alert." + a.key + "Meta")}
+                  </span>
+                </span>
+                <PIcon className="alert-caret" name="caret-right" />
+              </button>
+            ))}
           </div>
         </div>
       </div>

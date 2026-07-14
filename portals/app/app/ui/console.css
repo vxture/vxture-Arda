@@ -121,19 +121,30 @@
  *     boxed the way arda's very first pass did
  * `.ov-heading*` and `.stat-*` are new arda-local classes for this; `.con-
  * card*` keeps its DS-token values but switches to the real glass-card
- * recipe (was shell-template's hard-card look). Loosened spacing (24px beat,
- * owner feedback - admin's own rhythm read as cramped) still applies on top.
+ * recipe (was shell-template's hard-card look). Loosened spacing (32px
+ * between major blocks, 24px within a block - owner feedback, twice: admin's
+ * own rhythm read as cramped, and the later "industry practice" density pass
+ * over-corrected back toward tight) applies on top of every gap/padding here.
  */
 .screen,
 .dash {
-  gap: var(--vx-space-xl);
+  gap: var(--vx-space-2xl);
 }
 .dash-cols,
 .dash-main,
 .dash-side,
-.stat-grid,
+.stat-grid {
+  gap: var(--vx-space-2xl);
+}
+/* .ov-section has no base rule in the shell-template import (it's an
+   arda-only wrapper) - display:flex must be declared here or `gap` is a
+   silent no-op on a plain block element, which is exactly what was
+   happening: heading and content were stacking with zero space between
+   them. */
 .ov-section {
-  gap: var(--vx-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-2xl);
 }
 
 /* section / page heading: bare tone icon + title + description */
@@ -186,31 +197,32 @@
   gap: 8px;
 }
 
-/* KPI "pulse" cards - real admin-overview-pulse recipe */
+/* KPI "pulse" cards - real admin-overview-pulse recipe. auto-fit (not a
+   fixed repeat(4, ...)) so a 2-card grid (e.g. the security section) doesn't
+   leave dead columns - it was leaving half the row empty. */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-@media (max-width: 1180px) {
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 640px) {
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 .stat-card {
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: var(--vx-space-sm);
-  padding: var(--vx-space-xl);
+  gap: var(--vx-space-md);
+  padding: var(--vx-space-2xl);
   border: 1px solid color-mix(in srgb, var(--vx-color-brand-400) 16%, transparent);
   border-top: 2px solid var(--stat-tone);
   border-radius: var(--vx-admin-card-radius, var(--vx-radius-lg));
   background: color-mix(in srgb, var(--vx-color-white) 68%, transparent);
+}
+/* label + delta tag share the top row (live admin.vxture.com reference:
+   label/help-icon on the left, the "+N" pill on the right); the value is
+   its own row below - not label/value/tag stacked three-deep. */
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vx-space-sm);
 }
 .stat-card-label {
   display: inline-flex;
@@ -236,6 +248,7 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 .stat-card-tags em {
   display: inline-flex;
@@ -272,7 +285,7 @@
   background: color-mix(in srgb, var(--vx-color-white) 92%, transparent);
   border: 1px solid var(--vx-color-border);
   border-radius: var(--vx-shell-panel-radius);
-  padding: var(--vx-space-xl);
+  padding: var(--vx-space-2xl);
   display: flex;
   flex-direction: column;
   gap: var(--vx-space-xl);
@@ -286,10 +299,10 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--vx-space-lg);
 }
 .con-card-hd.pad {
-  padding: var(--vx-space-xl);
+  padding: var(--vx-space-2xl);
   border-bottom: 1px solid var(--vx-color-border-muted);
 }
 .con-card-heading {
@@ -315,14 +328,14 @@
    page, not here). */
 .ov-link-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--vx-space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--vx-space-xl);
 }
 .ov-link-card {
-  min-height: 96px;
+  min-height: 104px;
   display: flex;
   gap: var(--vx-space-md);
-  padding: var(--vx-space-lg);
+  padding: var(--vx-space-xl);
   border: 1px solid color-mix(in srgb, var(--vx-color-brand-400) 16%, transparent);
   border-radius: var(--vx-admin-card-radius, var(--vx-radius-lg));
   background: color-mix(in srgb, var(--vx-color-white) 72%, transparent);
@@ -514,7 +527,7 @@
 .qm-body {
   display: flex;
   align-items: center;
-  gap: var(--vx-space-lg);
+  gap: var(--vx-space-xl);
   flex-wrap: wrap;
 }
 .qm-dims {
@@ -1548,6 +1561,13 @@
   background: var(--vx-color-surface);
   color: var(--vx-color-text-strong);
   box-shadow: var(--vx-shadow-sm);
+}
+/* period switch: filled-blue active pill (admin.vxture.com reference,
+   "近30天" tab), not the neutral active state other seg-tabs use. */
+.period-switch .seg.active {
+  background: var(--vx-color-primary);
+  color: var(--vx-color-white);
+  box-shadow: none;
 }
 .row-actions {
   display: inline-flex;
