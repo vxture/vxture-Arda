@@ -86,6 +86,7 @@
 ## 4. 源材料映射表
 
 | 源文档 | 路径 | 贡献给 | 已知问题 |
+| 回函 09（新，plat-280）| 深链联测收口（机验段 + owner 目测四步全过）+ P3.2 v1 功能切片回销（目录四元组/agent_db 连接器/服务化只读输出；解绑动作如实列缺）+ 计量整备清零 | `arda-plat-280-deeplink-p32-2607141540.md` | 已发（回销性质，无待裁定项）|
 |---|---|---|---|
 | `identity-app-integration-standard.md` | `docs/20-design/identity-app-integration-standard.md` | `plat-110` | scope 名残留 `arda:subscription`——**已修正**（2026-07-03，原文件本体与 `plat-110` 同步更新为 `openid profile email phone arda`）|
 | `vxture-platform-integration-requirements.md` | `docs/60-workplan/vxture-platform-integration-requirements.md` | `plat-100`/`plat-300` | §3.1 权益端点契约已被 `ADR-11`/`ent-120` 取代——**已标注**（2026-07-03，原文件本体加"本节格式已过期"提示，指向 `ent-120`）|
