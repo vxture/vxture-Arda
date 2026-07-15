@@ -5,7 +5,7 @@
 ## Top-Level Structure
 
 ```
-vxture-Arda/
+vxture-arda/
 |-- CLAUDE.md                     # Repository working agreement (branch model, CI, contracts)
 |-- README.md                     # Quick start, architecture, deploy overview
 |-- .env.example                  # Authoritative config template; the real .env is git-ignored

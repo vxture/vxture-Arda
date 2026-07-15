@@ -4,7 +4,7 @@ Claude's persistent memory for this project is stored outside this repository
 tree, in the user-level Claude Code memory directory:
 
 ```
-C:\Users\Stone Smoker\.claude\projects\D--MyWebSite-vxturestudio-vxture-Arda\memory\
+C:\Users\Stone Smoker\.claude\projects\D--MyWebSite-vxturestudio-vxture-arda\memory\
 ```
 
 The `MEMORY.md` index file in that directory lists all active memory entries.
