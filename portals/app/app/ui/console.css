@@ -59,8 +59,26 @@
   color: var(--vx-color-danger-600);
 }
 
-/* ---- arda-only: subscription-tier badge on the brand mark ---- */
+/* ---- arda-only: subscription-tier badge on the brand mark ----
+   The template's .vxh-brand is `inline-flex; align-items:center`, which put
+   the tag on the same vertical center line as the brand name - owner
+   feedback: it should read as a corner badge on the product name, not a
+   second inline word. .vxh-brand gets position:relative (an arda-only
+   addition on top of the template rule, not a redeclaration of it) so the
+   tag can pin to the name's top-right corner instead of flowing in the row.
+   `left: 100%` (not `right: -Npx`) anchors the tag's own LEFT edge to the
+   name's right edge regardless of the tag's rendered width, which varies
+   by plan label ("PRO" vs "ENTERPRISE") - a `right` offset has to guess
+   that width to avoid overlap and was wrong (measured a real 19x8px
+   bounding-box overlap with the name, not just a visually-tight gap). */
+.vxh-brand {
+  position: relative;
+}
 .vxh-brand-tag {
+  position: absolute;
+  top: -2px;
+  left: 100%;
+  margin-left: 4px;
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.04em;
