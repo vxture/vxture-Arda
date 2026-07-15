@@ -49,7 +49,7 @@ linear history.
 
 ## Branch protection (GitHub Rulesets, not legacy protection)
 
-Enforced via repo Rulesets (`gh api repos/vxture/vxture-Arda/rulesets`). Legacy
+Enforced via repo Rulesets (`gh api repos/vxture/vxture-arda/rulesets`). Legacy
 `branches/*/protection` returns 404 - do not look there.
 
 - `develop` ("Arda develop quality gate"): require PR (0 approvals), require
