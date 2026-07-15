@@ -242,10 +242,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--vx-space-sm);
-  /* Top inset trimmed vs. the other three sides (owner feedback: shift the
-     card's content up) - still a real DS token (--vx-space-lg), not a
-     custom px value. */
-  padding: var(--vx-space-lg) var(--vx-space-2xl) var(--vx-space-2xl);
+  /* Top and left insets trimmed vs. the right/bottom (owner feedback: shift
+     the card's content up and left, real content should hug the edge) -
+     still real DS tokens (--vx-space-lg), not custom px values. */
+  padding: var(--vx-space-lg) var(--vx-space-2xl) var(--vx-space-2xl) var(--vx-space-lg);
   border: 1px solid color-mix(in srgb, var(--vx-color-brand-400) 16%, transparent);
   border-top: 2px solid var(--stat-tone);
   border-radius: var(--vx-admin-card-radius, var(--vx-radius-lg));
