@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "@arda/shared/i18n";
 import { PIcon } from "./phosphor-icon";
-import { NAV, NAV_FLAT, BOARDS, PLAN_TAGS } from "./nav-config";
+import { BOARD_NAV, NAV_FLAT, BOARDS, PLAN_TAGS } from "./nav-config";
 import { canUseFeature, minTierFor } from "../entitlement/capability";
 import { SCREEN_FEATURES } from "../entitlement/screen-features";
 import { useSubscription } from "../entitlement/gate";
@@ -42,7 +42,8 @@ export function Sidebar({ activeKey, onSelect, collapsed, onToggle, isAdmin = fa
   // Group-collapse-all affordance (parity with the vxture admin/console
   // shell): only worth showing once the nav has enough items to make
   // collapsing groups a real navigation aid.
-  const visibleGroups = NAV.filter((g) => !g.adminOnly || isAdmin);
+  const domainNav = BOARD_NAV[activeBoard.id] ?? [];
+  const visibleGroups = domainNav.filter((g) => !g.adminOnly || isAdmin);
   const totalItems = visibleGroups.flatMap((g) => g.items).length;
   const showCollapseAll = totalItems > 10;
   const allClosed = visibleGroups.every((g) => closed[g.key]);
