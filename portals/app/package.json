@@ -19,7 +19,7 @@
     "@vxture/design-system": "^2.0.0",
     "@vxture/shared": "^1.4.0",
     "ioredis": "^5.4.1",
-    "jose": "^5.9.6",
+    "jose": "^6.2.3",
     "next": "^15.5.6",
     "pg": "^8.22.0",
     "prisma": "^7.8.0",
