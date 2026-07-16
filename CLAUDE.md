@@ -59,9 +59,9 @@ Enforced via repo Rulesets (`gh api repos/vxture/vxture-arda/rulesets`). Legacy
 `branches/*/protection` returns 404 - do not look there.
 
 - `main` (single ruleset): require PR (0 approvals - checks gate merges, not
-  human review), require `quality-gate` status check (strict / up-to-date with
-  base), block deletion, block non-fast-forward, require linear history,
-  squash-only merges.
+  human review), require `quality-gate` and `audit` status checks (strict /
+  up-to-date with base), block deletion, block non-fast-forward, require
+  linear history, squash-only merges.
 - `production` GitHub Environment: required reviewer (stonesmoker) - every
   `v*.*.*` tag deploy pauses here until approved.
 - `beta` GitHub Environment: no reviewer gate - a `beta-*` tag deploys
@@ -110,15 +110,21 @@ itself. `.github/dependabot.yml` covers the npm workspace (`@vxture/*` grouped
 and excluded from auto-bump - that moves on its own release cadence) and
 GitHub Actions versions.
 
-`quality-gate` must pass before any merge to `main`. It runs on every PR, but
-NOT on a tag push - cutting a release tag ships whatever is already at that
-commit on `main`, it does not re-verify the gate. It runs:
+`quality-gate` and `audit` must both pass before any merge to `main`. Neither
+runs on a tag push - cutting a release tag ships whatever is already at that
+commit on `main`, it does not re-verify either gate. `quality-gate` runs:
 - static script checks (`bash -n`, `python -m compileall`,
   `scripts/checks/06-check-deploy-contracts.py`, `git diff --check`,
   secret-scan via `.gitleaks.toml`)
 - portal type-check and production build (`@arda/app`)
 - DS-usage check (`scripts/checks/09-check-ds-usage.py`, strict)
 - `docker compose --env-file .env.example config` validation
+
+`audit` is a separate required check: `osv-scanner` (pinned binary) scans
+`portals/package-lock.json` for known dependency vulnerabilities, hard-blocking
+on any new finding. Exceptions (dev-only/build-time-only transitive deps that
+never reach the deployed image) are recorded in `.osv-scanner.toml` with a
+reason, per-package-version - never suppressed by removing the check.
 
 ## Repository hygiene
 
