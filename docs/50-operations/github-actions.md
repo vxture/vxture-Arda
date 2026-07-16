@@ -6,7 +6,7 @@
 
 | Workflow | File | Trigger | Purpose |
 |---|---|---|---|
-| CI | `ci.yml` | PR to main | `quality-gate` status check |
+| CI | `ci.yml` | PR to main | `quality-gate` + `audit` status checks |
 | Deploy | `deploy.yml` | Push of a `beta-*` or `v*.*.*` tag | detect environment -> build -> deploy |
 | Build | `build.yml` | Called by deploy.yml (`workflow_call`) | Build, push, and scan the `arda-app` image |
 | CodeQL | `codeql.yml` | PR/push to main; weekly schedule | SAST on the TS/JS source |
@@ -38,7 +38,8 @@ just redo identical work. (The one gap: an admin using their ruleset bypass to
 push `main` directly without a PR gets no CI validation - accepted tradeoff.)
 Does NOT deploy.
 
-Three parallel jobs, then a final aggregator:
+Four parallel jobs (`audit` is an independent required check, not part of the
+`quality-gate` aggregation - see below), then a final aggregator:
 
 ### `static-checks`
 
@@ -65,12 +66,26 @@ Three parallel jobs, then a final aggregator:
   binary cached across runs by version
 - Allowlist of known-safe placeholders in `.gitleaks.toml`
 
+### `audit` - SCA (dependency vulnerability) gate
+
+- `osv-scanner scan -L portals/package-lock.json --config .osv-scanner.toml`
+  (pinned binary v2.4.0, cached across runs by version)
+- Hard-blocks on any new finding - fix (upgrade/override) or explicitly accept
+  in `.osv-scanner.toml` with a `[[PackageOverrides]]` entry (name+version
+  pinned, never a global `[[IgnoredVulns]]` by GHSA id - that would also
+  suppress the same CVE resurfacing in a different, still-vulnerable version)
+- Independent required status check on the `main` ruleset, not folded into
+  `quality-gate` - a security gate deserves its own visible status
+- Matches the org-wide SCA policy
+  (vxture-platform `docs/standards/repo-governance-standard.md` #9)
+
 ### `quality-gate` (aggregator)
 
-Required status check for the `main` branch ruleset. Succeeds only when all
-three upstream jobs pass (a docs-only-skipped `portal-build` still counts as
-passing - only its internal steps are conditionally skipped, the job itself
-always completes). Does not run on a tag push - cutting a release tag ships
+One of two required status checks for the `main` branch ruleset (the other is
+`audit`, above). Succeeds only when `static-checks`/`portal-build`/`secret-scan`
+all pass (a docs-only-skipped `portal-build` still counts as passing - only
+its internal steps are conditionally skipped, the job itself always
+completes). Does not run on a tag push - cutting a release tag ships
 whatever is already at that commit on `main`, it does not re-verify the gate.
 
 ---

@@ -1,0 +1,35 @@
+# Config for the `audit` required check (ci.yml) - osv-scanner reads this
+# when scanning portals/package-lock.json. Per the org-wide SCA policy
+# (vxture-platform docs/standards/repo-governance-standard.md #9): every new
+# finding must be fixed (upgrade/override) or explicitly accepted here with a
+# reason - never suppressed by removing the check or adding continue-on-error.
+#
+# Use [[PackageOverrides]] pinned to an exact name+version, NOT [[IgnoredVulns]]
+# by GHSA id - a global GHSA ignore silently also suppresses that same CVE
+# resurfacing in a different (still-vulnerable) version later.
+
+# GHSA-92pp-h63x-v22m (CVSS 5.3). Transitive dep of @prisma/dev (Prisma's
+# local dev-server tooling, package-lock.json path:
+# node_modules/@prisma/dev -> @hono/node-server@1.19.11). Dev-only: the
+# Dockerfile runner stage does a fresh `npm install -g prisma` and never
+# copies the workspace node_modules this lives in, so it never reaches the
+# built image. Revisit if @prisma/dev bumps its own pin past 1.19.13.
+[[PackageOverrides]]
+name = "@hono/node-server"
+version = "1.19.11"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "transitive dep of @prisma/dev (local dev tooling only); Dockerfile runner stage never copies this node_modules, does not reach production"
+
+# GHSA-qx2v-qp2m-jg93 (CVSS 6.1). Next.js's own nested copy
+# (node_modules/next/node_modules/postcss@8.4.31) - Next pins an older range
+# internally, separate from the root postcss@8.5.15 Tailwind uses. Build-time
+# only (processes CSS during `next build`; the compiled output is static
+# CSS/JS by the time the standalone server runs, postcss itself never
+# executes at runtime). Revisit when Next.js bumps its own postcss pin.
+[[PackageOverrides]]
+name = "postcss"
+version = "8.4.31"
+ecosystem = "npm"
+vulnerability.ignore = true
+reason = "next's own nested/pinned copy, build-time only (next build); does not execute at runtime in the deployed container"

@@ -213,6 +213,52 @@ jobs:
           # match value out of the logs; a finding exits non-zero and fails CI.
           /tmp/gitleaks-bin/gitleaks dir . --config .gitleaks.toml --redact --no-banner --exit-code 1
 
+  # SCA (dependency vulnerability) gate. Independent required check, not
+  # folded into quality-gate's aggregation - matches the org-wide standard
+  # (vxture-platform docs/standards/repo-governance-standard.md #9), and a
+  # security-critical gate deserves its own visible status rather than being
+  # buried inside an aggregate. Hard-blocks: any new finding must be fixed or
+  # explicitly accepted in .osv-scanner.toml, never silenced by removing this
+  # check or adding continue-on-error.
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache osv-scanner binary
+        id: osv-scanner-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/osv-scanner-bin
+          key: osv-scanner-2.4.0-linux-amd64
+
+      - name: Download osv-scanner (cache miss only)
+        if: ${{ steps.osv-scanner-cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=2.4.0
+          url="https://github.com/google/osv-scanner/releases/download/v${version}/osv-scanner_linux_amd64"
+          mkdir -p /tmp/osv-scanner-bin
+          curl -fsSL "$url" -o /tmp/osv-scanner-bin/osv-scanner
+          chmod +x /tmp/osv-scanner-bin/osv-scanner
+
+      - name: Scan dependencies for known vulnerabilities (osv-scanner)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x /tmp/osv-scanner-bin/osv-scanner
+          # --config is NOT auto-discovered when scanning a specific lockfile
+          # path (only when scanning a directory) - must pass it explicitly or
+          # the ignore-list silently does nothing. Exit code 1 on any finding
+          # propagates and fails this step (no special handling needed).
+          /tmp/osv-scanner-bin/osv-scanner scan \
+            -L portals/package-lock.json \
+            --config .osv-scanner.toml
+
   # Aggregator that preserves the required status-check name. Branch rulesets
   # require "quality-gate"; keeping this job named exactly that means the
   # required check still maps after splitting the work into parallel jobs. It

@@ -162,6 +162,16 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "ci audit gate scans the lockfile with a pinned osv-scanner and explicit config",
+        Path(CI_WORKFLOW),
+        [
+            "name: audit",
+            "osv-scanner scan",
+            "-L portals/package-lock.json",
+            "--config .osv-scanner.toml",
+        ],
+    ),
+    (
         "deploy env loader resolves repository root and sources the operator env",
         Path("deploy/lib/01-env.sh"),
         [
