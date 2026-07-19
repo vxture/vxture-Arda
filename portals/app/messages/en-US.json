@@ -1267,5 +1267,51 @@
     },
     "emptyPending": "No pending requests.",
     "emptyMine": "You have not submitted any access requests."
+  },
+  "labeling": {
+    "title": "Classification Labeling",
+    "desc": "Review and (re)label the security classification of data assets in bulk (admins edit inline).",
+    "mTotal": "Total assets",
+    "cAsset": "Asset",
+    "cDomain": "Domain",
+    "cLevel": "Level",
+    "empty": "No data assets yet."
+  },
+  "syncLogs": {
+    "title": "Sync Logs & Alerts",
+    "desc": "Data-source ingestion & sync event feed (register / sync / failure).",
+    "mTotal": "Events",
+    "mSyncs": "Syncs",
+    "mFailures": "Failures",
+    "cEvent": "Event",
+    "cSource": "Source",
+    "cDetail": "Detail",
+    "cAt": "Time",
+    "action": {
+      "register": "Register",
+      "sync": "Sync",
+      "sync_fail": "Sync failed"
+    },
+    "empty": "No sync events yet."
+  },
+  "metaQuality": {
+    "title": "Metadata Quality",
+    "desc": "Derived metadata completeness score over description / owner / domain / team / tags.",
+    "mAvg": "Avg completeness",
+    "mComplete": "Complete",
+    "mIncomplete": "Needs work",
+    "byFieldTitle": "Fill rate by field",
+    "listTitle": "Asset completeness",
+    "cAsset": "Asset",
+    "cScore": "Completeness",
+    "cMissing": "Missing fields",
+    "field": {
+      "description": "Description",
+      "owner": "Owner",
+      "domain": "Domain",
+      "team": "Team",
+      "tags": "Tags"
+    },
+    "empty": "No data assets yet."
   }
 }

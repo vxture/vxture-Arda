@@ -1267,5 +1267,51 @@
     },
     "emptyPending": "暂无待审批申请。",
     "emptyMine": "你还没有提交过访问申请。"
+  },
+  "labeling": {
+    "title": "分级标注",
+    "desc": "批量查看与调整数据资产的安全分级（管理员可直接改）。",
+    "mTotal": "资产总数",
+    "cAsset": "资产",
+    "cDomain": "主题域",
+    "cLevel": "分级",
+    "empty": "暂无数据资产。"
+  },
+  "syncLogs": {
+    "title": "同步日志与告警",
+    "desc": "数据源接入与同步的事件流水（登记 / 同步 / 失败）。",
+    "mTotal": "事件数",
+    "mSyncs": "成功同步",
+    "mFailures": "失败",
+    "cEvent": "事件",
+    "cSource": "数据源",
+    "cDetail": "详情",
+    "cAt": "时间",
+    "action": {
+      "register": "登记",
+      "sync": "同步",
+      "sync_fail": "同步失败"
+    },
+    "empty": "暂无同步事件。"
+  },
+  "metaQuality": {
+    "title": "元数据质量",
+    "desc": "按描述/负责人/主题域/团队/标签的填充度派生的元数据完整度评分。",
+    "mAvg": "平均完整度",
+    "mComplete": "完整",
+    "mIncomplete": "待补全",
+    "byFieldTitle": "各字段填充率",
+    "listTitle": "资产完整度",
+    "cAsset": "资产",
+    "cScore": "完整度",
+    "cMissing": "缺失字段",
+    "field": {
+      "description": "描述",
+      "owner": "负责人",
+      "domain": "主题域",
+      "team": "团队",
+      "tags": "标签"
+    },
+    "empty": "暂无数据资产。"
   }
 }
