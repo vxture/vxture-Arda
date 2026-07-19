@@ -7,6 +7,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  typescript: {
+    // Next's build-time type check can't drive the TypeScript 7 native
+    // compiler's API (it reports "typescript not installed"). Types are still
+    // fully enforced by the dedicated `type-check` step (tsc --noEmit) that
+    // runs in CI before the build, so this only skips Next's redundant pass -
+    // it does not weaken the CI type gate. Revisit once Next supports TS 7.
+    ignoreBuildErrors: true,
+  },
   // Transpile the internal workspace package (raw TS source).
   transpilePackages: ["@arda/shared"],
   // Trace from the workspace root so standalone output includes the hoisted
