@@ -1,6 +1,10 @@
 import { prisma } from "../../lib/db";
 import type { AssetLevel } from "./seed";
 
+/** Reserved sentinel workspaceId for arda-ops-curated platform reference data,
+ *  overlaid read-only into every workspace (schema AssetScope). */
+const PLATFORM_WS = "__platform__";
+
 /**
  * Server-side catalog data access. Every query is scoped to the caller's
  * workspace (the isolation key). Maps the v1 Dataset row to the catalog view;
@@ -24,6 +28,8 @@ export interface CatalogAssetView {
   quality: number | null;
   subs: number | null;
   fields: number | null;
+  /** Platform-provided reference asset (read-only overlay), not tenant data. */
+  platform: boolean;
 }
 
 function formatCount(n: bigint | null): string {
@@ -37,6 +43,7 @@ function formatCount(n: bigint | null): string {
 
 type DatasetRecord = {
   id: string;
+  workspaceId: string;
   name: string;
   code: string;
   domain: string | null;
@@ -67,6 +74,7 @@ function toView(d: DatasetRecord): CatalogAssetView {
     quality: null,
     subs: null,
     fields: null,
+    platform: d.workspaceId === PLATFORM_WS,
   };
 }
 
@@ -97,14 +105,14 @@ async function qualityScores(workspaceId: string): Promise<Map<string, number>> 
 
 export async function getCatalogAssets(workspaceId: string): Promise<CatalogAssetView[]> {
   const [rows, scores] = await Promise.all([
-    prisma.dataset.findMany({ where: { workspaceId }, orderBy: { name: "asc" } }),
+    prisma.dataset.findMany({ where: { workspaceId: { in: [workspaceId, PLATFORM_WS] } }, orderBy: [{ workspaceId: "asc" }, { name: "asc" }] }),
     qualityScores(workspaceId),
   ]);
   return rows.map((d) => ({ ...toView(d), quality: scores.get(d.id) ?? null }));
 }
 
 export async function getCatalogAsset(workspaceId: string, id: string): Promise<CatalogAssetView | null> {
-  const row = await prisma.dataset.findFirst({ where: { workspaceId, id } });
+  const row = await prisma.dataset.findFirst({ where: { workspaceId: { in: [workspaceId, PLATFORM_WS] }, id } });
   return row ? toView(row) : null;
 }
 
@@ -136,7 +144,7 @@ function formatBytes(n: bigint | null): string {
 
 export async function getAssetProfile(workspaceId: string, id: string): Promise<AssetProfile | null> {
   const row = await prisma.dataset.findFirst({
-    where: { workspaceId, id },
+    where: { workspaceId: { in: [workspaceId, PLATFORM_WS] }, id },
     include: {
       source: { select: { name: true, type: true, lastSyncedAt: true } },
       tags: { include: { tag: { select: { id: true, name: true } } } },
@@ -150,12 +158,16 @@ export async function getAssetProfile(workspaceId: string, id: string): Promise<
   });
   if (!row) return null;
 
+  // Scope the aggregates to the dataset's OWN workspace (platform reference
+  // assets live under __platform__); linkable standards keep the tenant+platform
+  // overlay so a workspace can still bind its assets to platform standards.
+  const scope = row.workspaceId;
   const [upstream, downstream, totalAgg, linkable] = await Promise.all([
-    prisma.lineageEdge.count({ where: { workspaceId, downstreamDatasetId: id } }),
-    prisma.lineageEdge.count({ where: { workspaceId, upstreamDatasetId: id } }),
-    prisma.dataset.aggregate({ where: { workspaceId }, _sum: { sizeBytes: true } }),
+    prisma.lineageEdge.count({ where: { workspaceId: scope, downstreamDatasetId: id } }),
+    prisma.lineageEdge.count({ where: { workspaceId: scope, upstreamDatasetId: id } }),
+    prisma.dataset.aggregate({ where: { workspaceId: scope }, _sum: { sizeBytes: true } }),
     prisma.standard.findMany({
-      where: { workspaceId: { in: [workspaceId, "__platform__"] } },
+      where: { workspaceId: { in: [workspaceId, PLATFORM_WS] } },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
       take: 200,

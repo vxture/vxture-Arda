@@ -482,7 +482,8 @@
     "goldenMark": "Mark golden",
     "goldenUnmark": "Unmark golden",
     "standardsCard": "Standards compliance",
-    "removeStandard": "Unlink standard {name}"
+    "removeStandard": "Unlink standard {name}",
+    "platformTag": "Platform"
   },
   "standards": {
     "title": "Data Standards",
@@ -516,7 +517,8 @@
       "published": "Published",
       "draft": "Draft",
       "review": "In review"
-    }
+    },
+    "platformTag": "Platform"
   },
   "masterdata": {
     "title": "Master Data",

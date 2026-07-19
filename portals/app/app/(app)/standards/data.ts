@@ -1,7 +1,12 @@
 import { prisma } from "../../lib/db";
 
-/** Workspace-scoped data access for Data Standards. Metrics are computed from
- *  the rows, so they stay honest to what is actually catalogued. */
+/** Reserved sentinel workspaceId for arda-ops-curated platform reference data,
+ *  overlaid read-only into every workspace (schema AssetScope). */
+const PLATFORM_WS = "__platform__";
+
+/** Workspace-scoped data access for Data Standards, overlaid with the
+ *  platform-provided standards (read-only). Metrics are computed from the rows,
+ *  so they stay honest to what is actually catalogued. */
 export interface StandardView {
   id: string;
   code: string;
@@ -11,6 +16,7 @@ export interface StandardView {
   items: number;
   usage: number;
   status: string;
+  platform: boolean;
 }
 
 export interface StandardsMetrics {
@@ -26,7 +32,10 @@ export interface StandardsData {
 }
 
 export async function getStandards(workspaceId: string): Promise<StandardsData> {
-  const rows = await prisma.standard.findMany({ where: { workspaceId }, orderBy: { code: "asc" } });
+  const rows = await prisma.standard.findMany({
+    where: { workspaceId: { in: [workspaceId, PLATFORM_WS] } },
+    orderBy: [{ workspaceId: "asc" }, { code: "asc" }],
+  });
   const standards: StandardView[] = rows.map((s) => ({
     id: s.id,
     code: s.code,
@@ -36,6 +45,7 @@ export async function getStandards(workspaceId: string): Promise<StandardsData> 
     items: s.items,
     usage: s.usage,
     status: s.status,
+    platform: s.workspaceId === PLATFORM_WS,
   }));
   const metrics: StandardsMetrics = {
     elements: standards.filter((s) => s.type === "data-element").length,
