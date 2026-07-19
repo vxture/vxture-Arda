@@ -69,7 +69,14 @@ export function CatalogList({ assets }: { assets: CatalogAssetView[] }) {
             <PIcon name={domainIcon(a.domain)} />
           </span>
           <div>
-            <div className="cell-asset-name">{a.name}</div>
+            <div className="cell-asset-name">
+              {a.name}
+              {a.platform && (
+                <span style={{ marginLeft: "var(--vx-space-xs)" }}>
+                  <StatusBadge tone="info">{t("platformTag")}</StatusBadge>
+                </span>
+              )}
+            </div>
             <div className="cell-asset-code">{a.code}</div>
           </div>
         </div>

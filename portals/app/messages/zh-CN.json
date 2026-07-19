@@ -482,7 +482,8 @@
     "goldenMark": "标记金记录",
     "goldenUnmark": "取消金记录",
     "standardsCard": "标准符合性",
-    "removeStandard": "解除标准 {name}"
+    "removeStandard": "解除标准 {name}",
+    "platformTag": "平台"
   },
   "standards": {
     "title": "数据标准",
@@ -516,7 +517,8 @@
       "published": "已发布",
       "draft": "草稿",
       "review": "评审中"
-    }
+    },
+    "platformTag": "平台"
   },
   "masterdata": {
     "title": "主数据",
