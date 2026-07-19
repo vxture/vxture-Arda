@@ -31,6 +31,9 @@ generated/
 # Logs
 *.log
 logs/
+# ...but app-router source dirs named "logs" (e.g. /operations/logs,
+# /integration/logs) are SOURCE, not runtime logs - keep them tracked.
+!portals/app/app/**/logs/
 
 # Node / Next.js
 node_modules/

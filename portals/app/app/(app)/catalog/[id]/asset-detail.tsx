@@ -81,8 +81,11 @@ export function AssetMissing() {
   );
 }
 
-export function AssetDetail({ asset, isAdmin = false }: { asset: AssetProfile; isAdmin?: boolean }) {
+export function AssetDetail({ asset, isAdmin: isAdminProp = false }: { asset: AssetProfile; isAdmin?: boolean }) {
   const t = useTranslations("catalog");
+  // Platform reference assets are read-only to tenants (schema AssetScope) -
+  // suppress every edit affordance for them regardless of role.
+  const isAdmin = isAdminProp && !asset.platform;
   const router = useRouter();
   const [tab, setTab] = useState("schema");
   const [newTag, setNewTag] = useState("");

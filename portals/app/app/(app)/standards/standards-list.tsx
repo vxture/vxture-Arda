@@ -39,7 +39,14 @@ export function StandardsList({ standards, metrics }: { standards: StandardView[
       header: t("col.name"),
       cell: (s) => (
         <div>
-          <div className="cell-asset-name">{s.name}</div>
+          <div className="cell-asset-name">
+            {s.name}
+            {s.platform && (
+              <span style={{ marginLeft: "var(--vx-space-xs)" }}>
+                <StatusBadge tone="info">{t("platformTag")}</StatusBadge>
+              </span>
+            )}
+          </div>
           <div className="cell-asset-code">{s.code}</div>
         </div>
       ),

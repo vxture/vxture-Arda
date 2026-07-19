@@ -1,5 +1,13 @@
-import { UnderConstruction } from "../../../ui/placeholder";
+import { getSession } from "../../../auth/lib/session";
+import { getMetaQuality } from "../metaquality-data";
+import { MetaQualityView } from "../metaquality-view";
 
-export default function MetaQualityPage() {
-  return <UnderConstruction screenKey="metaQuality" icon="seal-check" />;
+export const dynamic = "force-dynamic";
+
+export default async function MetaQualityPage() {
+  const session = await getSession();
+  const data = session
+    ? await getMetaQuality(session.workspaceId)
+    : { rows: [], avgScore: null, complete: 0, total: 0, byField: [] };
+  return <MetaQualityView data={data} />;
 }
