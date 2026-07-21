@@ -175,8 +175,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
-          cache: pnpm
-          cache-dependency-path: portals/pnpm-lock.yaml
 
       - name: Restore Next.js build cache
         if: ${{ steps.changes.outputs.run_build == 'true' }}
