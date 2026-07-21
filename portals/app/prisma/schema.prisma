@@ -38,14 +38,20 @@ enum QualityStatus {
   fail
 }
 
-/// Data ownership scope. `workspace` = tenant-owned, isolated to and shared only
-/// within its workspace (across the agents present in that workspace). `platform`
-/// = arda-ops-curated global reference data (approved standards, admin-division
-/// code tables, currency codes), read-only to ALL workspaces. Platform rows carry
-/// the reserved sentinel workspaceId "__platform__" (workspaceId is a plain column,
-/// not a FK, so no WorkspaceRef row is required); a tenant read overlays them via
-/// workspaceId IN (self, "__platform__"). Writing a `platform` row requires the
-/// ops/platform role, never a tenant user. See docs/30-design/arda-data-150-multiagent-sharing.md.
+/// Data ownership scope - the EXPLICIT axis that distinguishes tenant data from
+/// platform-global reference data (data_platform_100 2.3.2: a product must NOT
+/// fabricate a workspace_id sentinel; workspace_id is platform-issued). `workspace`
+/// = tenant-owned, isolated to and shared only within its workspace (across the
+/// agents present in that workspace). `platform` = arda-ops-curated global
+/// reference data (approved standards, admin-division code tables, currency
+/// codes), read-only to ALL workspaces.
+///
+/// Platform rows carry `workspaceId = NULL` (NULL = platform-global; they belong
+/// to no workspace) together with `scope = platform`; the two are kept in lockstep
+/// (scope=platform iff workspaceId IS NULL). A tenant read overlays them via
+/// `workspaceId = self OR workspaceId IS NULL`. Writing a `platform` row requires
+/// the ops/platform role, never a tenant user. See
+/// docs/30-design/arda-data-150-multiagent-sharing.md.
 enum AssetScope {
   workspace
   platform
@@ -55,7 +61,9 @@ enum AssetScope {
 
 model Dataset {
   id            String      @id @default(cuid())
-  workspaceId   String
+  // NULL = platform-global reference asset (scope=platform); otherwise the
+  // owning workspace. Plain indexed column, not a FK (data-110 1).
+  workspaceId   String?
   dataSourceId  String?
   name          String
   // Technical slug shown in the catalog (e.g. dw_customer_master).
@@ -80,6 +88,9 @@ model Dataset {
   // governance; lightweight v1 - matching/merge engines stay future.
   goldenRecord  Boolean     @default(false)
   classification AssetLevel @default(internal)
+  // platform = ops-curated global reference asset (workspaceId NULL), read-only
+  // overlay into every workspace; workspace = tenant-owned.
+  scope         AssetScope  @default(workspace)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -124,12 +135,13 @@ model DatasetTag {
 
 model GlossaryTerm {
   id            String  @id @default(cuid())
-  workspaceId   String
+  // NULL = platform-global term (scope=platform); otherwise the owning workspace.
+  workspaceId   String?
   term          String
   definition    String
   stewardUserId String?
-  // platform = ops-approved global glossary shared to all workspaces (sentinel
-  // workspaceId "__platform__"); workspace = tenant-local term.
+  // platform = ops-approved global glossary shared to all workspaces
+  // (workspaceId NULL); workspace = tenant-local term.
   scope         AssetScope @default(workspace)
 
   @@unique([workspaceId, term])
@@ -244,7 +256,8 @@ model QualityResult {
 /// Data standard: a code set or data element reference (metadata governance).
 model Standard {
   id          String   @id @default(cuid())
-  workspaceId String
+  // NULL = platform-global standard (scope=platform); otherwise owning workspace.
+  workspaceId String?
   code        String // e.g. STD-001
   name        String
   type        String // code-set | data-element
@@ -253,8 +266,8 @@ model Standard {
   usage       Int      @default(0)
   status      String   @default("draft") // published | draft | review
   // platform = ops-approved global reference (e.g. code sets like admin-division
-  // codes), read-only to all workspaces via the "__platform__" sentinel; workspace
-  // = tenant-local draft. Promotion workspace->platform is an ops action.
+  // codes), read-only to all workspaces (workspaceId NULL); workspace =
+  // tenant-local draft. Promotion workspace->platform is an ops action.
   scope       AssetScope @default(workspace)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -308,12 +321,12 @@ model DataService {
 
 /// S-BL1 (biz-431): dataset-level standard-compliance association. Column-level
 /// compliance rides the future Field model. workspaceId is a denormalized carry
-/// column (data-110 3.2); platform-scope standards may be referenced by any
-/// workspace (read-only overlay).
+/// column (data-110 3.2), NULL for platform-global links; platform-scope
+/// standards may be referenced by any workspace (read-only overlay).
 model DatasetStandard {
   datasetId   String
   standardId  String
-  workspaceId String
+  workspaceId String?
 
   dataset  Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
   standard Standard @relation(fields: [standardId], references: [id], onDelete: Cascade)

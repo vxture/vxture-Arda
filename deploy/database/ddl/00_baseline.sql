@@ -27,7 +27,8 @@ CREATE TYPE "AssetScope" AS ENUM ('workspace', 'platform');
 -- CreateTable
 CREATE TABLE "Dataset" (
     "id" TEXT NOT NULL,
-    "workspaceId" TEXT NOT NULL,
+    -- NULL = platform-global reference asset (scope=platform); see AssetScope.
+    "workspaceId" TEXT,
     "dataSourceId" TEXT,
     "name" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -43,10 +44,14 @@ CREATE TABLE "Dataset" (
     "ownerApp" TEXT,
     "goldenRecord" BOOLEAN NOT NULL DEFAULT false,
     "classification" "AssetLevel" NOT NULL DEFAULT 'internal',
+    "scope" "AssetScope" NOT NULL DEFAULT 'workspace',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Dataset_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Dataset_pkey" PRIMARY KEY ("id"),
+    -- Explicit-axis invariant (data_platform_100 2.3.2): a platform-global row
+    -- carries NULL workspaceId, a workspace row a non-null one; the two agree.
+    CONSTRAINT "Dataset_scope_ws_ck" CHECK (("scope" = 'platform') = ("workspaceId" IS NULL))
 );
 
 -- CreateTable
@@ -71,13 +76,15 @@ CREATE TABLE "DatasetTag" (
 -- CreateTable
 CREATE TABLE "GlossaryTerm" (
     "id" TEXT NOT NULL,
-    "workspaceId" TEXT NOT NULL,
+    -- NULL = platform-global term (scope=platform); see AssetScope.
+    "workspaceId" TEXT,
     "term" TEXT NOT NULL,
     "definition" TEXT NOT NULL,
     "stewardUserId" TEXT,
     "scope" "AssetScope" NOT NULL DEFAULT 'workspace',
 
-    CONSTRAINT "GlossaryTerm_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "GlossaryTerm_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "GlossaryTerm_scope_ws_ck" CHECK (("scope" = 'platform') = ("workspaceId" IS NULL))
 );
 
 -- CreateTable
@@ -164,7 +171,8 @@ CREATE TABLE "QualityResult" (
 -- CreateTable
 CREATE TABLE "Standard" (
     "id" TEXT NOT NULL,
-    "workspaceId" TEXT NOT NULL,
+    -- NULL = platform-global standard (scope=platform); see AssetScope.
+    "workspaceId" TEXT,
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -176,7 +184,8 @@ CREATE TABLE "Standard" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Standard_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Standard_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "Standard_scope_ws_ck" CHECK (("scope" = 'platform') = ("workspaceId" IS NULL))
 );
 
 -- CreateTable
@@ -217,7 +226,8 @@ CREATE TABLE "DataService" (
 CREATE TABLE "DatasetStandard" (
     "datasetId" TEXT NOT NULL,
     "standardId" TEXT NOT NULL,
-    "workspaceId" TEXT NOT NULL,
+    -- NULL for platform-global links (carry column, denormalized; data-110 3.2).
+    "workspaceId" TEXT,
 
     CONSTRAINT "DatasetStandard_pkey" PRIMARY KEY ("datasetId","standardId")
 );
@@ -341,6 +351,12 @@ CREATE INDEX "Dataset_workspaceId_ownerApp_idx" ON "Dataset"("workspaceId", "own
 -- CreateIndex
 CREATE UNIQUE INDEX "Dataset_workspaceId_code_key" ON "Dataset"("workspaceId", "code");
 
+-- Platform namespace uniqueness: workspaceId IS NULL rows are all-distinct under
+-- the composite index above (NULLs never conflict), so a partial unique index
+-- enforces per-code uniqueness across platform-global reference assets. This is
+-- the ON CONFLICT arbiter platform-seed.sql targets.
+CREATE UNIQUE INDEX "Dataset_platform_code_key" ON "Dataset"("code") WHERE "workspaceId" IS NULL;
+
 -- CreateIndex
 CREATE INDEX "Tag_workspaceId_idx" ON "Tag"("workspaceId");
 
@@ -355,6 +371,9 @@ CREATE INDEX "GlossaryTerm_workspaceId_idx" ON "GlossaryTerm"("workspaceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "GlossaryTerm_workspaceId_term_key" ON "GlossaryTerm"("workspaceId", "term");
+
+-- Platform namespace uniqueness (see Dataset_platform_code_key rationale).
+CREATE UNIQUE INDEX "GlossaryTerm_platform_term_key" ON "GlossaryTerm"("term") WHERE "workspaceId" IS NULL;
 
 -- CreateIndex
 CREATE INDEX "DataSource_workspaceId_idx" ON "DataSource"("workspaceId");
@@ -390,6 +409,9 @@ CREATE INDEX "Standard_workspaceId_idx" ON "Standard"("workspaceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Standard_workspaceId_code_key" ON "Standard"("workspaceId", "code");
+
+-- Platform namespace uniqueness (see Dataset_platform_code_key rationale).
+CREATE UNIQUE INDEX "Standard_platform_code_key" ON "Standard"("code") WHERE "workspaceId" IS NULL;
 
 -- CreateIndex
 CREATE INDEX "LineageEdge_workspaceId_idx" ON "LineageEdge"("workspaceId");
