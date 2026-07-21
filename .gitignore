@@ -13,6 +13,11 @@
 !.npmrc
 !portals/.npmrc
 
+# Local operator helper: SSH_ASKPASS shim for the passphrase-protected deploy
+# key used during live db-init/host operations. References a passphrase file
+# outside the repo; never commit it.
+.ssh-askpass-tmp.sh
+
 # Runtime data and generated configs
 data/
 backup/

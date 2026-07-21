@@ -11,8 +11,7 @@
     "./locales": "./src/locales.ts",
     "./i18n": "./src/i18n.tsx",
     "./preferences": "./src/preferences.ts",
-    "./preference-sync": "./src/preference-sync.tsx",
-    "./version": "./src/version.ts"
+    "./preference-sync": "./src/preference-sync.tsx"
   },
   "peerDependencies": {
     "@vxture/design-system": "*",

@@ -49,6 +49,10 @@ services:
       - "${APP_PUBLISH_PORT:-3230}:3230"
     environment:
       PORT: "3230"
+      # Runtime environment for the /api/health identity block (025): production
+      # | beta | dev. Set per stack (deploy/env/*.env); NOT baked into the image,
+      # so the same image reports its true stage. Honest fallback is dev.
+      DEPLOY_STAGE: "${DEPLOY_STAGE:-dev}"
       # -- OIDC RP (Vxture App Integration Standard v1.0) --------------------
       OIDC_ISSUER: "${OIDC_ISSUER:-}"
       OIDC_CLIENT_ID: "${OIDC_CLIENT_ID:-arda}"

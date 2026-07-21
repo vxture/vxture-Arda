@@ -119,6 +119,8 @@ jobs:
           # the literal ref the deploy job pulls by.
           echo "image_tag=sha-$short_sha" >> "$GITHUB_OUTPUT"
           echo "ref_tag=$REF_NAME" >> "$GITHUB_OUTPUT"
+          # ISO-8601 image build timestamp for the health identity block (025).
+          echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       # Buildx setup intermittently fails pulling the buildkit image (infra
       # flake, not code). Tolerate the first failure and retry once before the
@@ -204,6 +206,9 @@ jobs:
           # into the exported gha layer cache (mode=max), leaking the token.
           build-args: |
             VXTURE_NPM_REGISTRY=${{ env.VXTURE_NPM_REGISTRY }}
+            APP_VERSION=${{ steps.meta.outputs.ref_tag }}
+            GIT_SHA=${{ steps.meta.outputs.short_sha }}
+            BUILD_TIME=${{ steps.meta.outputs.build_time }}
           secrets: |
             node_auth_token=${{ secrets.NODE_AUTH_TOKEN }}
           tags: |
