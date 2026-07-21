@@ -51,13 +51,20 @@ expected_enums() {
   grep -c '^CREATE TYPE ' "$DDL_DIR/00_baseline.sql"
 }
 
+# Objects live across the arda-owned schemas (ADR-012 physical split): the
+# domain schema `catalog`, the contract schemas vx_provision / local_usage /
+# local_authz, and `public` for a pre-migration (single-public-schema) stack.
+# Counting the whole set means verify holds both before and after the C2
+# migration moves tables out of public.
+SCHEMA_SET="'public','catalog','vx_provision','local_usage','local_authz'"
+
 live_tables() {
   # _prisma_migrations (historical artifact on adopted stacks) not counted.
-  echo "SELECT count(*) FROM pg_tables WHERE schemaname='public' AND tablename <> '_prisma_migrations';" | psql_scalar
+  echo "SELECT count(*) FROM pg_tables WHERE schemaname IN ($SCHEMA_SET) AND tablename <> '_prisma_migrations';" | psql_scalar
 }
 
 live_enums() {
-  echo "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname='public' AND t.typtype='e';" | psql_scalar
+  echo "SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname IN ($SCHEMA_SET) AND t.typtype='e';" | psql_scalar
 }
 
 role_exists() {
@@ -138,8 +145,14 @@ case "$ACTION" in
     verify
     ;;
   reset)
-    echo "[db] RESET: dropping schema public on $DB_CONTAINER/$PSQL_DB..." >&2
-    echo "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" | psql_exec
+    echo "[db] RESET: dropping arda schemas on $DB_CONTAINER/$PSQL_DB..." >&2
+    # Drop every arda-owned schema (ADR-012), not just public, so the baseline
+    # rebuilds cleanly on a C2-migrated stack. The baseline recreates them.
+    echo "DROP SCHEMA IF EXISTS vx_provision CASCADE;
+          DROP SCHEMA IF EXISTS local_usage CASCADE;
+          DROP SCHEMA IF EXISTS local_authz CASCADE;
+          DROP SCHEMA IF EXISTS catalog CASCADE;
+          DROP SCHEMA public CASCADE; CREATE SCHEMA public;" | psql_exec
     echo "[db] applying 00_baseline.sql..."
     psql_exec < "$DDL_DIR/00_baseline.sql"
     apply_roles
