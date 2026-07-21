@@ -55,6 +55,19 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # 127.0.0.1 healthcheck cannot reach it. Bind all interfaces instead.
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3230
+# Build provenance for the /api/health identity block (org standard 025).
+# CI passes these as build-args from the release tag / commit / build date;
+# honest defaults ("dev"/"unknown") when absent - never hardcoded. buildTime is
+# an ISO-8601 image build timestamp. DEPLOY_STAGE (the runtime environment) is
+# NOT baked here: it is set per stack at runtime (compose/etc.env) so the same
+# image reports its true stage and a retagged prod image never inherits a beta
+# stage.
+ARG APP_VERSION=dev
+ARG GIT_SHA=unknown
+ARG BUILD_TIME=unknown
+ENV APP_VERSION=${APP_VERSION} \
+    GIT_SHA=${GIT_SHA} \
+    BUILD_TIME=${BUILD_TIME}
 # No prisma CLI in the runtime image: DB structure is owned by the hand-written
 # DDL under deploy/database/ddl/ and applied only via the db-init workflow
 # (org governance #7) - the container never migrates at startup.

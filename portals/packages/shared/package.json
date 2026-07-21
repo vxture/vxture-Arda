@@ -11,12 +11,11 @@
     "./locales": "./src/locales.ts",
     "./i18n": "./src/i18n.tsx",
     "./preferences": "./src/preferences.ts",
-    "./preference-sync": "./src/preference-sync.tsx",
-    "./version": "./src/version.ts"
+    "./preference-sync": "./src/preference-sync.tsx"
   },
   "peerDependencies": {
     "@vxture/design-system": "*",
-    "@vxture/shared": "*",
+    "@vxture/shared": "^1.5.0",
     "next": "^16.2.10",
     "react": "*",
     "react-dom": "*"
