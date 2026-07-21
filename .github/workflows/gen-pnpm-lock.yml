@@ -1,0 +1,47 @@
+name: gen-pnpm-lock
+
+# One-off helper (D4 finish): generate portals/pnpm-lock.yaml using the org
+# NODE_AUTH_TOKEN (available to this repo's Actions) so the committed npm
+# workspace can be locked for pnpm without a local authed install. Uploads the
+# lockfile as an artifact; the operator downloads + commits it, then deletes
+# this workflow. workflow_dispatch only - never runs automatically.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.30.3"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      # Uses the committed portals/.npmrc (@vxture registry, node-linker=hoisted,
+      # and the NODE_AUTH_TOKEN-expanded auth line). --lockfile-only resolves the
+      # full dependency graph (incl. private @vxture/*) and writes pnpm-lock.yaml
+      # without linking node_modules.
+      - name: Generate pnpm-lock.yaml
+        working-directory: portals
+        run: pnpm install --lockfile-only
+
+      - name: Upload pnpm-lock.yaml
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock
+          path: portals/pnpm-lock.yaml
+          if-no-files-found: error
